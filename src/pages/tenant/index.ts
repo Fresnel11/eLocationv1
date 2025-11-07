@@ -1,0 +1,1 @@
+export { TenantAdsPage } from './TenantAdsPage';
