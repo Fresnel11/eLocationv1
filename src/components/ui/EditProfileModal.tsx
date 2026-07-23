@@ -6,6 +6,7 @@ import { ImageCropModal } from './ImageCropModal';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { analyzeProfileImage, ImageAnalysisResult } from '../../services/imageAnalysisService';
+import { API_URL } from '../../config/env';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       const avatarUrl = profile.avatar ? 
-        (profile.avatar.startsWith('http') ? profile.avatar : `http://localhost:3000${profile.avatar}`) : '';
+        (profile.avatar.startsWith('http') ? profile.avatar : `${API_URL}${profile.avatar}`) : '';
       setFormData({
         bio: profile.bio || '',
         phone: profile.phone || '',
@@ -96,7 +97,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      const avatarUrl = response.data.url.startsWith('http') ? response.data.url : `http://localhost:3000${response.data.url}`;
+      const avatarUrl = response.data.url.startsWith('http') ? response.data.url : `${API_URL}${response.data.url}`;
       setFormData(prev => ({ ...prev, avatar: avatarUrl }));
       success('Avatar uploadé !', 'Votre photo de profil a été mise à jour.');
     } catch (err) {
@@ -146,7 +147,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   </div>
                 ) : formData.avatar ? (
                   <img
-                    src={formData.avatar.startsWith('http') ? formData.avatar : `http://localhost:3000${formData.avatar}`}
+                    src={formData.avatar.startsWith('http') ? formData.avatar : `${API_URL}${formData.avatar}`}
                     alt="Avatar"
                     className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200"
                     onError={(e) => {

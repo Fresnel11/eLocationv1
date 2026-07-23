@@ -6,6 +6,7 @@ import { RefusalModal } from '../components/ui/RefusalModal';
 import { BookingDetailsModal } from '../components/ui/BookingDetailsModal';
 import { bookingsService, Booking } from '../services/bookingsService';
 import { useToast } from '../context/ToastContext';
+import { API_URL } from '../config/env';
 
 const statusConfig = {
   pending: { 
@@ -222,7 +223,7 @@ export const BookingsPage: React.FC = () => {
                     {/* Header Mobile */}
                     <div className="flex items-start gap-3 mb-3">
                       <img
-                        src={booking.ad.photos[0] ? `http://localhost:3000${booking.ad.photos[0]}` : '/placeholder.jpg'}
+                        src={booking.ad.photos[0] ? `${API_URL}${booking.ad.photos[0]}` : '/placeholder.jpg'}
                         alt={booking.ad.title}
                         className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                       />
@@ -269,7 +270,7 @@ export const BookingsPage: React.FC = () => {
                     {/* Property Image */}
                     <div className="flex-shrink-0 relative">
                       <img
-                        src={booking.ad.photos[0] ? `http://localhost:3000${booking.ad.photos[0]}` : '/placeholder.jpg'}
+                        src={booking.ad.photos[0] ? `${API_URL}${booking.ad.photos[0]}` : '/placeholder.jpg'}
                         alt={booking.ad.title}
                         className="w-20 h-20 rounded-lg object-cover"
                       />

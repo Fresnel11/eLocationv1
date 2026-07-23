@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { websocketService } from '../services/websocketService';
+import { API_URL } from '../config/env';
 
 interface Notification {
   id: string;
@@ -121,7 +122,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/notifications/${id}/read`, {
+      const response = await fetch(`${API_URL}/notifications/${id}/read`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -143,7 +144,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:3000/notifications/mark-all-read', {
+      const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -163,7 +164,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const deleteNotification = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/notifications/${id}`, {
+      const response = await fetch(`${API_URL}/notifications/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -184,7 +185,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const loadNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:3000/notifications', {
+      const response = await fetch(`${API_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

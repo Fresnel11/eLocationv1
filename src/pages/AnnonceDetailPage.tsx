@@ -10,8 +10,9 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { ClickableAvatar } from '../components/ui/ClickableAvatar';
 import { ShareAdModal } from '../components/ui/ShareAdModal';
+import { API_URL } from '../config/env';
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = API_URL;
 
 interface Review {
   id: string;
@@ -365,7 +366,7 @@ const AnnonceDetailPage: React.FC = () => {
       const depositAmount = Math.round(totalPrice * 0.2);
       
       // Créer le paiement Moneroo immédiatement
-      const paymentResponse = await fetch('http://localhost:3000/moneroo/create-payment', {
+      const paymentResponse = await fetch(`${API_URL}/moneroo/create-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

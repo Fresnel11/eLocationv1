@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Clock, DollarSign, User, Phone, Mail, Calendar, Mess
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { RespondToRequestModal } from '../components/ui/RespondToRequestModal';
+import { API_URL } from '../config/env';
 
 interface RequestDetail {
   id: string;
@@ -64,7 +65,7 @@ export const RequestDetailPage: React.FC = () => {
       const token = localStorage.getItem('token');
       
       // Récupérer la demande
-      const requestResponse = await fetch(`http://localhost:3000/requests/${requestId}`, {
+      const requestResponse = await fetch(`${API_URL}/requests/${requestId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -74,7 +75,7 @@ export const RequestDetailPage: React.FC = () => {
         const requestData = await requestResponse.json();
         
         // Récupérer les réponses
-        const responsesResponse = await fetch(`http://localhost:3000/responses/request/${requestId}`);
+        const responsesResponse = await fetch(`${API_URL}/responses/request/${requestId}`);
         const responsesData = responsesResponse.ok ? await responsesResponse.json() : [];
         
         setRequest({ ...requestData, responses: responsesData });

@@ -1,4 +1,5 @@
 import { api } from './api';
+import { VAPID_PUBLIC_KEY } from '../config/env';
 
 class PushNotificationService {
   private registration: ServiceWorkerRegistration | null = null;
@@ -45,9 +46,7 @@ class PushNotificationService {
     try {
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(
-          process.env.REACT_APP_VAPID_PUBLIC_KEY || ''
-        ),
+        applicationServerKey: this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
       // Envoyer l'abonnement au serveur

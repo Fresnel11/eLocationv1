@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, MapPin } from 'lucide-react';
 import { recommendationsService } from '../services/recommendationsService';
 import { Ad } from '../services/adsService';
+import { API_URL } from '../config/env';
 
 interface RecommendedAdsProps {
   limit?: number;
@@ -59,7 +60,7 @@ export const RecommendedAds: React.FC<RecommendedAdsProps> = ({ limit = 6, class
                 src={ad.photos && ad.photos.length > 0 
                   ? (ad.photos[0].startsWith('http') 
                       ? ad.photos[0] 
-                      : `http://localhost:3000${ad.photos[0]}`
+                      : `${API_URL}${ad.photos[0]}`
                     )
                   : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop'
                 }

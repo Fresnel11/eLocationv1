@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AvatarPreviewModal } from './AvatarPreviewModal';
+import { API_URL } from '../../config/env';
 
 interface ClickableAvatarProps {
   avatarUrl?: string;
@@ -29,7 +30,7 @@ export const ClickableAvatar: React.FC<ClickableAvatarProps> = ({
   };
 
   const fullAvatarUrl = avatarUrl ? 
-    (avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:3000${avatarUrl}`) : '';
+    (avatarUrl.startsWith('http') ? avatarUrl : `${API_URL}${avatarUrl}`) : '';
 
   return (
     <>

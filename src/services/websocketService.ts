@@ -1,3 +1,5 @@
+import { WS_URL } from '../config/env';
+
 class WebSocketService {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
@@ -5,8 +7,18 @@ class WebSocketService {
   private reconnectInterval = 1000;
   private messageCallbacks = new Map<string, Function[]>();
   private isConnecting = false;
+  private disabledWarningShown = false;
 
   connect() {
+    // WS_URL vide => temps réel désactivé (ex. backend sans gateway WebSocket déployée).
+    if (!WS_URL) {
+      if (!this.disabledWarningShown) {
+        console.info('WebSocket désactivé (VITE_WS_URL non défini)');
+        this.disabledWarningShown = true;
+      }
+      return;
+    }
+
     // Vérifier tous les états possibles
     if (this.ws?.readyState === WebSocket.OPEN) {
       console.log('WebSocket already connected');
@@ -33,7 +45,7 @@ class WebSocketService {
     this.isConnecting = true;
     
     try {
-      this.ws = new WebSocket(`ws://localhost:3001`);
+      this.ws = new WebSocket(WS_URL);
     } catch (error) {
       console.error('Failed to create WebSocket:', error);
       this.isConnecting = false;

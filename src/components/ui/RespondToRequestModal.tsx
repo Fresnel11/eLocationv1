@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Send, Phone, Mail, MapPin, DollarSign, Image, Plus } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from '../../context/ToastContext';
+import { API_URL } from '../../config/env';
 
 interface RespondToRequestModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ export const RespondToRequestModal: React.FC<RespondToRequestModalProps> = ({
       };
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/responses/request/${request.id}`, {
+      const response = await fetch(`${API_URL}/responses/request/${request.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

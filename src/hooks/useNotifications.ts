@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { notificationsService, Notification } from '../services/notificationsService';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config/env';
 
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -41,7 +42,7 @@ export const useNotifications = () => {
   const initializeSocket = () => {
     if (!token) return;
 
-    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000', {
+    const newSocket = io(API_URL, {
       auth: { token },
       transports: ['websocket'],
     });

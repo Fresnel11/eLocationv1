@@ -18,6 +18,7 @@ import { ProfileDropdownMenu } from '../components/ui/ProfileDropdownMenu';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { API_URL } from '../config/env';
 
 interface User {
   id: string;
@@ -162,7 +163,7 @@ export const UserProfilePage: React.FC = () => {
     try {
       setRequestsLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/requests', {
+      const response = await fetch(`${API_URL}/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -183,7 +184,7 @@ export const UserProfilePage: React.FC = () => {
   const handleDeleteRequest = async (requestId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/requests/${requestId}`, {
+      const response = await fetch(`${API_URL}/requests/${requestId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -481,7 +482,7 @@ export const UserProfilePage: React.FC = () => {
                               src={ad.photos[0] 
                                 ? (ad.photos[0].startsWith('http') 
                                     ? ad.photos[0] 
-                                    : `http://localhost:3000${ad.photos[0]}`
+                                    : `${API_URL}${ad.photos[0]}`
                                   )
                                 : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop'
                               }
@@ -839,7 +840,7 @@ export const UserProfilePage: React.FC = () => {
                               src={ad.photos[0] 
                                 ? (ad.photos[0].startsWith('http') 
                                     ? ad.photos[0] 
-                                    : `http://localhost:3000${ad.photos[0]}`
+                                    : `${API_URL}${ad.photos[0]}`
                                   )
                                 : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop'
                               }

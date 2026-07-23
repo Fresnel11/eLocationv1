@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:3000';
+import { API_URL } from '../config/env';
+const API_BASE_URL = API_URL;
 
 export interface PaymentData {
   amount: number;

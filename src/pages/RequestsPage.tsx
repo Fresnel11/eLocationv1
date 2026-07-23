@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card';
 import { CreateRequestModal } from '../components/ui/CreateRequestModal';
 import { RespondToRequestModal } from '../components/ui/RespondToRequestModal';
 import { ClickableAvatar } from '../components/ui/ClickableAvatar';
+import { API_URL } from '../config/env';
 
 interface Request {
   id: string;
@@ -50,7 +51,7 @@ export const RequestsPage: React.FC = () => {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/requests', {
+      const response = await fetch(`${API_URL}/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

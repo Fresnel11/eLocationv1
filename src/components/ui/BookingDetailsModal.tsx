@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Calendar, MapPin, User, CreditCard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from './Button';
 import { Booking } from '../../services/bookingsService';
+import { API_URL } from '../../config/env';
 
 interface BookingDetailsModalProps {
   isOpen: boolean;
@@ -116,7 +117,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             </h3>
             <div className="flex gap-4">
               <img
-                src={booking.ad.photos[0] ? `http://localhost:3000${booking.ad.photos[0]}` : '/placeholder.jpg'}
+                src={booking.ad.photos[0] ? `${API_URL}${booking.ad.photos[0]}` : '/placeholder.jpg'}
                 alt={booking.ad.title}
                 className="w-20 h-20 rounded-lg object-cover"
               />

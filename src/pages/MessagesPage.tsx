@@ -7,6 +7,7 @@ import { EmojiPicker } from '../components/ui/EmojiPicker';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessagesContext';
 import { websocketService } from '../services/websocketService';
+import { API_URL } from '../config/env';
 
 export interface Conversation {
   id: string;
@@ -178,7 +179,7 @@ export const MessagesPage: React.FC = () => {
       if (selectedImage) {
         const formData = new FormData();
         formData.append('file', selectedImage);
-        const uploadResponse = await fetch('http://localhost:3000/upload', {
+        const uploadResponse = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -426,7 +427,7 @@ export const MessagesPage: React.FC = () => {
                           {message.messageType === 'image' && message.imageUrl ? (
                             <div className="p-2">
                               <img 
-                                src={message.imageUrl.startsWith('http') ? message.imageUrl : `http://localhost:3000${message.imageUrl}`}
+                                src={message.imageUrl.startsWith('http') ? message.imageUrl : `${API_URL}${message.imageUrl}`}
                                 alt="Image envoyée"
                                 className="max-w-full h-auto rounded-lg mb-2"
                               />

@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { bookingsService } from '../../services/bookingsService';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { API_URL } from '../../config/env';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -193,7 +194,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ad 
             {/* Property Info */}
             <div className="flex gap-4">
               <img
-                src={ad.photos[0] ? `http://localhost:3000${ad.photos[0]}` : '/placeholder.jpg'}
+                src={ad.photos[0] ? `${API_URL}${ad.photos[0]}` : '/placeholder.jpg'}
                 alt={ad.title}
                 className="w-16 h-16 rounded-lg object-cover"
               />
@@ -267,7 +268,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ad 
           {/* Property Info */}
           <div className="flex gap-4">
             <img
-              src={ad.photos[0] ? `http://localhost:3000${ad.photos[0]}` : '/placeholder.jpg'}
+              src={ad.photos[0] ? `${API_URL}${ad.photos[0]}` : '/placeholder.jpg'}
               alt={ad.title}
               className="w-16 h-16 rounded-lg object-cover"
             />

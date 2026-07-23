@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Settings, Shield, BarChart3, Download, LogOut, UserX, Flag, Copy, EyeOff, QrCode, UserPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { API_URL } from '../../config/env';
 
 
 interface ProfileDropdownMenuProps {
@@ -32,7 +33,7 @@ export const ProfileDropdownMenu: React.FC<ProfileDropdownMenuProps> = ({
   const handleExportData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/users/export-data', {
+      const response = await fetch(`${API_URL}/users/export-data`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

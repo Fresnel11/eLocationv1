@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Calendar, Eye } from 'lucide-react';
 import { Ad } from '../types/ad';
 import SaveForOfflineButton from './SaveForOfflineButton';
+import { API_URL } from '../config/env';
 
 interface AdCardProps {
   ad: Ad;
@@ -19,7 +20,7 @@ const AdCard: React.FC<AdCardProps> = ({ ad, onClick }) => {
           <img 
             src={ad.photos[0].startsWith('http') 
               ? ad.photos[0] 
-              : `http://localhost:3000${ad.photos[0]}`
+              : `${API_URL}${ad.photos[0]}`
             }
             alt={ad.title}
             className="w-full h-48 object-cover rounded-t-lg"

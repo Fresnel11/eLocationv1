@@ -8,6 +8,7 @@ import { BookingModal } from './BookingModal';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config/env';
 
 interface AdModalProps {
   ad: {
@@ -94,7 +95,7 @@ export const AdModal: React.FC<AdModalProps> = ({ ad, isOpen, onClose }) => {
     ad.photos.forEach(photo => {
       media.push({
         type: 'image',
-        url: photo.startsWith('http') ? photo : `http://localhost:3000${photo}`
+        url: photo.startsWith('http') ? photo : `${API_URL}${photo}`
       });
     });
   }
@@ -103,7 +104,7 @@ export const AdModal: React.FC<AdModalProps> = ({ ad, isOpen, onClose }) => {
   if (ad.video) {
     media.push({
       type: 'video',
-      url: ad.video.startsWith('http') ? ad.video : `http://localhost:3000${ad.video}`
+      url: ad.video.startsWith('http') ? ad.video : `${API_URL}${ad.video}`
     });
   }
   

@@ -39,21 +39,26 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const getAvatarColor = (name: string) => {
+  const getAvatarColor = (name?: string | null) => {
     const colors = [
       'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
       'bg-indigo-500', 'bg-red-500', 'bg-yellow-500', 'bg-teal-500'
     ];
-    const hash = name.split('').reduce((a, b) => {
+    const hash = String(name ?? '').split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
       return a & a;
     }, 0);
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (firstName?: string | null, lastName?: string | null) => {
+    const initials = `${String(firstName ?? '').charAt(0)}${String(lastName ?? '').charAt(0)}`.toUpperCase();
+    return initials || '?';
   };
+
+  // Nom complet sûr : évite `undefined undefined` si l'objet user est incomplet.
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+  const avatarSeed = `${user?.firstName ?? ''}${user?.lastName ?? ''}`;
 
   return (
     <>
@@ -193,16 +198,16 @@ export const Navbar: React.FC = () => {
                     {user.profilePicture ? (
                       <img
                         src={user.profilePicture}
-                        alt={`${user.firstName} ${user.lastName}`}
+                        alt={fullName}
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(user.firstName + user.lastName)}`}>
-                        {getInitials(user.firstName, user.lastName)}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(avatarSeed)}`}>
+                        {getInitials(user?.firstName, user?.lastName)}
                       </div>
                     )}
                     <span className="text-gray-900 font-medium text-sm whitespace-nowrap">
-                      {user.firstName} {user.lastName}
+                      {fullName}
                     </span>
                     <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${
                       isUserMenuOpen ? 'rotate-180' : ''
@@ -213,7 +218,7 @@ export const Navbar: React.FC = () => {
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[60]">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
                         <p className="text-xs text-gray-500 truncate" title={user.email || user.phone || undefined}>{user.email || user.phone}</p>
                       </div>
                       <button
@@ -388,16 +393,16 @@ export const Navbar: React.FC = () => {
                     {user.profilePicture ? (
                       <img
                         src={user.profilePicture}
-                        alt={`${user.firstName} ${user.lastName}`}
+                        alt={fullName}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${getAvatarColor(user.firstName + user.lastName)}`}>
-                        {getInitials(user.firstName, user.lastName)}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${getAvatarColor(avatarSeed)}`}>
+                        {getInitials(user?.firstName, user?.lastName)}
                       </div>
                     )}
                     <div>
-                      <p className="font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
+                      <p className="font-semibold text-gray-900">{fullName}</p>
                       <p className="text-sm text-gray-600">Connecté</p>
                     </div>
                   </div>

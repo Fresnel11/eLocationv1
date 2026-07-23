@@ -3,6 +3,7 @@ import { Star, MapPin, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config/env';
 
 interface Ad {
   id: string;
@@ -78,7 +79,7 @@ export const RecommendationsSection: React.FC = () => {
             <div className="aspect-video bg-gray-200 relative">
               {ad.photos?.[0] ? (
                 <img
-                  src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/uploads/${ad.photos[0]}`}
+                  src={`${API_URL}/uploads/${ad.photos[0]}`}
                   alt={ad.title}
                   className="w-full h-full object-cover"
                 />
