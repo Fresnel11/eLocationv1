@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Search, Filter, MapPin, Calendar, Users, Bed, Bath, Car, Wifi, Tv, AirVent, Utensils, ChevronDown, Grid, List, Heart, Star, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -48,7 +48,9 @@ export const AdsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reviewModalAd, setReviewModalAd] = useState<AdWithUI | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get('search') ?? '';
+  const [searchTerm, setSearchTerm] = useState(urlSearch);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [totalAds, setTotalAds] = useState(0);
@@ -141,6 +143,12 @@ export const AdsPage: React.FC = () => {
   }, [userLocation, userCity]);
 
 
+
+  // Recherche lancée depuis la navbar : /ads?search=... met à jour le champ
+  // même si la page est déjà montée.
+  useEffect(() => {
+    setSearchTerm(urlSearch);
+  }, [urlSearch]);
 
   useEffect(() => {
     fetchCategories();

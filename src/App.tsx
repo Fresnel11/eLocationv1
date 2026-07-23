@@ -82,7 +82,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {!isAdminRoute && <Navbar />}
-      <main>
+      <main id="main-content">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
