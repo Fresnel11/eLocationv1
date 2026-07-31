@@ -5,9 +5,7 @@ import { User } from '../services/authService';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  register: (firstName: string, lastName: string, phone: string, password: string, email?: string, referralCode?: string, acceptedTerms?: boolean, birthDate?: string, gender?: 'masculin' | 'féminin') => Promise<{ phone: string; otpPreview: string }>;
-  requestOtp: (email: string) => Promise<void>;
-  verifyOtp: (email: string, code: string) => Promise<void>;
+  register: (firstName: string, lastName: string, phone: string, password: string, email?: string, referralCode?: string, acceptedTerms?: boolean, birthDate?: string, gender?: 'masculin' | 'féminin') => Promise<void>;
   logout: () => void;
   loading: boolean;
   isInitialized: boolean;
@@ -39,8 +37,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error,
     login: storeLogin,
     register: storeRegister,
-    requestOtp: storeRequestOtp,
-    verifyOtp: storeVerifyOtp,
     logout: storeLogout,
     clearError,
     initializeAuth,
@@ -56,15 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (firstName: string, lastName: string, phone: string, password: string, email?: string, referralCode?: string, acceptedTerms?: boolean, birthDate?: string, gender?: 'masculin' | 'féminin') => {
-    return await storeRegister({ firstName, lastName, phone, password, email, referralCode, acceptedTerms: acceptedTerms || false, birthDate: birthDate || '', gender: gender || 'masculin' });
-  };
-
-  const requestOtp = async (email: string) => {
-    await storeRequestOtp(email);
-  };
-
-  const verifyOtp = async (email: string, code: string) => {
-    await storeVerifyOtp(email, code);
+    await storeRegister({ firstName, lastName, phone, password, email, referralCode, acceptedTerms: acceptedTerms || false, birthDate: birthDate || '', gender: gender || 'masculin' });
   };
 
   const logout = () => {
@@ -79,8 +67,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     login,
     register,
-    requestOtp,
-    verifyOtp,
     logout,
     loading: isLoading,
     isInitialized,

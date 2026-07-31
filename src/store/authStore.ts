@@ -10,17 +10,15 @@ interface AuthState {
   error: string | null;
   
   // Actions
-  login: (data: LoginData) => Promise<void>;
-  register: (data: RegisterData) => Promise<{ phone: string; otpPreview: string }>;
-  requestOtp: (email: string) => Promise<void>;
-  verifyOtp: (email: string, code: string) => Promise<void>;
+  login: (data: LoginData & { rememberMe?: boolean }) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   initializeAuth: () => void;
   updateUser: (user: User) => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isLoading: false,
@@ -62,40 +60,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authService.register(data);
-      set({ isLoading: false });
-      return { phone: response.phone, otpPreview: response.otpPreview };
-    } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Erreur d\'inscription', 
-        isLoading: false 
+      // L'inscription authentifie directement : on stocke la session comme
+      // pour une connexion sans « se souvenir de moi ».
+      sessionStorage.setItem('token', response.access_token);
+      sessionStorage.setItem('user', JSON.stringify(response.user));
+      set({
+        user: response.user,
+        token: response.access_token,
+        isLoading: false
       });
-      throw error;
-    }
-  },
-
-  requestOtp: async (email: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      await authService.requestOtp(email);
-      set({ isLoading: false });
     } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Erreur lors de l\'envoi de l\'OTP', 
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
-
-  verifyOtp: async (email: string, code: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      await authService.verifyOtp(email, code);
-      set({ isLoading: false });
-    } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Code OTP invalide', 
-        isLoading: false 
+      set({
+        error: error.response?.data?.message || 'Erreur d\'inscription',
+        isLoading: false
       });
       throw error;
     }

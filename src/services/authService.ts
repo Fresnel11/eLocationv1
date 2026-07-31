@@ -1,5 +1,6 @@
 import { api } from './api';
 import { cookieUtils } from '../utils/cookies';
+import { getStoredToken, getStoredUserRaw } from '../utils/authToken';
 
 export interface RegisterData {
   firstName: string;
@@ -36,18 +37,9 @@ export interface AuthResponse {
   user: User;
 }
 
-export interface RegisterResponse {
+/** L'inscription connecte directement l'utilisateur : elle renvoie un token. */
+export interface RegisterResponse extends AuthResponse {
   message: string;
-  phone: string;
-  otpPreview: string;
-  expiresAt: string;
-}
-
-export interface OtpResponse {
-  message: string;
-  email?: string;
-  otpPreview?: string;
-  expiresAt?: string;
 }
 
 export const authService = {
@@ -58,16 +50,6 @@ export const authService = {
 
   async login(data: LoginData): Promise<AuthResponse> {
     const response = await api.post('/auth/login', data);
-    return response.data;
-  },
-
-  async requestOtp(email: string): Promise<OtpResponse> {
-    const response = await api.post('/auth/request-otp', { email });
-    return response.data;
-  },
-
-  async verifyOtp(email: string, code: string): Promise<OtpResponse> {
-    const response = await api.post('/auth/verify-otp', { email, code });
     return response.data;
   },
 
@@ -96,12 +78,12 @@ export const authService = {
   },
 
   getStoredUser(): User | null {
-    const user = localStorage.getItem('user') || sessionStorage.getItem('user') || cookieUtils.get('user');
+    const user = getStoredUserRaw();
     return user ? JSON.parse(user) : null;
   },
 
   getStoredToken(): string | null {
-    return localStorage.getItem('token') || sessionStorage.getItem('token') || cookieUtils.get('token');
+    return getStoredToken();
   },
 
   isAuthenticated(): boolean {

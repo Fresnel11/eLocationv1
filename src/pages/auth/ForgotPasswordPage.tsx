@@ -1,11 +1,32 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, X } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { ArrowLeft, KeyRound, LifeBuoy, Mail, ShieldCheck, X } from 'lucide-react';
+import { AuthLayout, type AuthHighlight } from '../../components/auth/AuthLayout';
+import { AuthField } from '../../components/auth/AuthField';
+import { AuthAlert } from '../../components/auth/AuthAlert';
+import { AuthSubmitButton } from '../../components/auth/AuthSubmitButton';
 import { authService, User as UserType } from '../../services/authService';
-import logoImage from '../../assets/e_location.png';
+
+const HIGHLIGHTS: AuthHighlight[] = [
+  {
+    icon: LifeBuoy,
+    title: 'On retrouve votre compte',
+    description: 'Une adresse email suffit pour repartir du bon pied.',
+    tint: 'bg-cyan-500/25',
+  },
+  {
+    icon: KeyRound,
+    title: 'Un code à usage unique',
+    description: 'Valable 10 minutes, envoyé uniquement sur votre boîte mail.',
+    tint: 'bg-orange-500/25',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Vos annonces sont intactes',
+    description: 'Changer de mot de passe ne touche ni vos annonces ni vos réservations.',
+    tint: 'bg-green-500/25',
+  },
+];
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,20 +38,20 @@ export const ForgotPasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
       setError('L\'email est requis');
       return;
     }
-    
+
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Email invalide');
       return;
     }
-    
+
     setError('');
     setLoading(true);
-    
+
     try {
       const response = await authService.forgotPassword(email);
       if (response.user) {
@@ -67,123 +88,111 @@ export const ForgotPasswordPage: React.FC = () => {
   };
 
   if (showConfirmation && foundUser) {
+    const initials = `${foundUser.firstName?.[0] ?? ''}${foundUser.lastName?.[0] ?? ''}`.toUpperCase();
+
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="flex justify-center">
-            <Link to="/">
-              <img src={logoImage} alt="eLocation Bénin" className="h-16 w-auto" />
-            </Link>
+      <AuthLayout
+        panelTitle={
+          <>
+            Un compte,
+            <br />
+            <span className="text-cyan-300">et on le remet en route.</span>
+          </>
+        }
+        panelSubtitle="Confirmez qu'il s'agit bien de votre compte avant l'envoi du code."
+        highlights={HIGHLIGHTS}
+        title="C'est bien vous ?"
+        subtitle="Nous avons trouvé un compte associé à cette adresse email."
+      >
+        {error && <AuthAlert>{error}</AuthAlert>}
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-xl font-bold text-white shadow-lg shadow-blue-600/25">
+            {initials || <Mail className="h-7 w-7" />}
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Compte trouvé
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Est-ce votre compte ?
-          </p>
+          <h3 className="mt-4 text-lg font-semibold text-slate-900">
+            {foundUser.firstName} {foundUser.lastName}
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">{foundUser.email}</p>
+          {foundUser.phone && <p className="text-sm text-slate-500">{foundUser.phone}</p>}
+          {foundUser.role && (
+            <span className="mt-3 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium capitalize text-blue-700">
+              {foundUser.role.name}
+            </span>
+          )}
         </div>
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {foundUser.firstName} {foundUser.lastName}
-                </h3>
-                <p className="text-sm text-gray-600">{foundUser.email}</p>
-                {foundUser.phone && (
-                  <p className="text-sm text-gray-600">{foundUser.phone}</p>
-                )}
-                {foundUser.role && (
-                  <p className="text-xs text-gray-500 mt-1 capitalize">
-                    {foundUser.role.name}
-                  </p>
-                )}
-              </div>
+        <div className="mt-6 space-y-3">
+          <AuthSubmitButton
+            onClick={handleConfirmAccount}
+            loading={loading}
+            loadingLabel="Envoi du code..."
+          >
+            <Mail className="h-4 w-4" />
+            Oui, envoyez-moi le code
+          </AuthSubmitButton>
 
-              <div className="space-y-3">
-                <Button 
-                  onClick={handleConfirmAccount} 
-                  className="w-full" 
-                  disabled={loading}
-                >
-                  {loading ? 'Envoi du code...' : 'Oui, c\'est mon compte'}
-                </Button>
-                
-                <Button 
-                  onClick={handleRejectAccount} 
-                  variant="outline" 
-                  className="w-full"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Non, ce n'est pas mon compte
-                </Button>
-              </div>
-
-              {error && (
-                <div className="mt-4 text-sm text-red-600 text-center">
-                  {error}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <button
+            type="button"
+            onClick={handleRejectAccount}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-6 text-[0.95rem] font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+          >
+            <X className="h-4 w-4" />
+            Non, ce n'est pas mon compte
+          </button>
         </div>
-      </div>
+
+        <p className="mt-5 text-center text-xs text-slate-400">
+          Le code sera envoyé à {foundUser.email} et restera valable 10 minutes.
+        </p>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Link to="/" className="flex items-center space-x-2">
-            <Home className="h-8 w-8 text-blue-600" />
-            <span className="font-bold text-xl text-gray-800">eLocation</span>
-            <span className="text-sm text-blue-600 font-medium">Bénin</span>
-          </Link>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Mot de passe oublié ?
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Entrez votre email pour retrouver votre compte
-        </p>
-      </div>
+    <AuthLayout
+      panelTitle={
+        <>
+          Un mot de passe oublié,
+          <br />
+          <span className="text-cyan-300">ça arrive à tout le monde.</span>
+        </>
+      }
+      panelSubtitle="Quelques secondes suffisent pour retrouver l'accès à votre espace eLocation."
+      highlights={HIGHLIGHTS}
+      title="Mot de passe oublié ?"
+      subtitle="Saisissez l'adresse email de votre compte, nous vous enverrons un code de vérification."
+      footer={
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1.5 font-medium text-slate-500 transition-colors hover:text-slate-900"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour à la connexion
+        </Link>
+      }
+    >
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <AuthField
+          label="Email"
+          type="email"
+          icon={Mail}
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (error) setError('');
+          }}
+          error={error}
+          required
+          autoFocus
+          autoComplete="email"
+          placeholder="votre@email.com"
+        />
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center">Récupération de compte</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Input
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={error}
-                required
-                placeholder="votre@email.com"
-              />
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Recherche...' : 'Rechercher mon compte'}
-              </Button>
-
-              <div className="text-center">
-                <Link to="/login" className="text-sm text-blue-600 hover:text-blue-500 inline-flex items-center">
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Retour à la connexion
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <AuthSubmitButton type="submit" loading={loading} loadingLabel="Recherche...">
+          Rechercher mon compte
+        </AuthSubmitButton>
+      </form>
+    </AuthLayout>
   );
 };
