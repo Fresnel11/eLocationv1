@@ -27,6 +27,9 @@ export interface Ad {
   };
   createdAt: string;
   updatedAt: string;
+  /** Agrégées par le serveur avec la liste : aucun appel supplémentaire. */
+  averageRating?: number;
+  reviewsCount?: number;
 }
 
 interface AdsResponse {
@@ -45,13 +48,44 @@ interface LocationParams {
   radius?: number;
 }
 
+/** Filtres appliqués par le serveur, sur l'ensemble du catalogue. */
+export interface AdFilters {
+  search?: string;
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  location?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
+  sortBy?: 'createdAt' | 'price' | 'title';
+  sortOrder?: 'ASC' | 'DESC';
+}
+
 export const adsService = {
-  async getAds(page: number = 1, limit: number = 10, location?: LocationParams, userCity?: string): Promise<AdsResponse> {
+  async getAds(
+    page: number = 1,
+    limit: number = 10,
+    location?: LocationParams,
+    userCity?: string,
+    filters: AdFilters = {},
+  ): Promise<AdsResponse> {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
     });
-    
+
+    // Les filtres partent au serveur : ils portent sur tout le catalogue et non
+    // sur la seule page affichée, contrairement au filtrage client précédent.
+    if (filters.search) params.append('search', filters.search);
+    if (filters.categoryId) params.append('categoryId', filters.categoryId);
+    if (filters.minPrice !== undefined) params.append('minPrice', String(filters.minPrice));
+    if (filters.maxPrice !== undefined) params.append('maxPrice', String(filters.maxPrice));
+    if (filters.location) params.append('location', filters.location);
+    if (filters.bedrooms !== undefined) params.append('bedrooms', String(filters.bedrooms));
+    if (filters.bathrooms !== undefined) params.append('bathrooms', String(filters.bathrooms));
+    if (filters.amenities?.length) params.append('amenities', filters.amenities.join(','));
+
     // Géolocalisation par coordonnées (existant)
     if (location?.latitude && location?.longitude) {
       params.append('userLatitude', location.latitude.toString());
@@ -61,21 +95,27 @@ export const adsService = {
     }
     // Nouvelle géolocalisation par ville
     else {
+      if (filters.sortBy) {
+        params.append('sortBy', filters.sortBy);
+        params.append('sortOrder', filters.sortOrder || 'DESC');
+      }
       const detectedCity = userCity || await LocationService.detectUserCity();
       if (detectedCity) {
         params.append('userCity', detectedCity);
       }
     }
-    
-    // Générer clé de cache
+
+    // La clé de cache doit inclure les filtres, sinon deux recherches
+    // différentes se renverraient mutuellement leurs résultats.
     const cacheKey = CacheService.generateKey('ads', {
-      page, limit, 
+      page, limit,
       lat: location?.latitude,
-      lng: location?.longitude, 
+      lng: location?.longitude,
       radius: location?.radius,
-      city: userCity
+      city: userCity,
+      q: params.toString(),
     });
-    
+
     // Vérifier le cache
     const cached = CacheService.get<AdsResponse>(cacheKey);
     if (cached) {

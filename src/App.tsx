@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { Navbar } from './components/layout/Navbar';
+import { AppTopBar } from './components/shell/AppTopBar';
+import { AppRail } from './components/shell/AppRail';
 import { Footer } from './components/layout/Footer';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -11,7 +11,7 @@ import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 
 import { AdsPage } from './pages/AdsPage';
-import AnnonceDetailPage from './pages/AnnonceDetailPage';
+import { AdDetailPage } from './pages/AdDetailPage';
 import { CreateAdPage } from './pages/CreateAdPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
@@ -85,13 +85,20 @@ function AppContent() {
   const { user } = useAuth();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
+  // Coque commune (en-tête + rail) sur toute l'application publique.
+  // Exclue de l'admin, qui a sa propre mise en page, et des pages d'auth,
+  // qui s'affichent en plein écran.
+  const showShell = !isAdminRoute && !isAuthRoute;
   // TODO: Messagerie - Retirer '/messages' quand implémenté
   const hideFooter = /* location.pathname === '/messages' || */ isAdminRoute || isAuthRoute || !!user;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {!isAdminRoute && !isAuthRoute && <Navbar />}
-      <main id="main-content">
+      {showShell && <AppTopBar />}
+      {showShell && <AppRail />}
+      {/* Décalage à gauche : le rail est en position fixe, sans cette marge il
+          passerait par-dessus le contenu des pages. */}
+      <main id="main-content" className={showShell ? 'lg:pl-24' : undefined}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -146,11 +153,16 @@ function AppContent() {
           <Route path="/create-ad" element={<ProtectedRoute><CreateAdPage /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<UserProfilePage />} />
 
-          <Route path="/annonce/:id" element={<AnnonceDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
+
+          {/* Détail d'une annonce. Le préfixe /detail évite qu'une route
+              dynamique à la racine n'attrape toutes les URL inconnues.
+              /annonce/:id reste valide pour les liens déjà partagés. */}
+          <Route path="/detail/:id" element={<AdDetailPage />} />
+          <Route path="/annonce/:id" element={<AdDetailPage />} />
         </Routes>
       </main>
       {!hideFooter && <Footer />}

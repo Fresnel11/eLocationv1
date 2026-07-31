@@ -17,3 +17,57 @@ export const getMediaUrl = (path?: string | null): string => {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`;
 };
+
+/**
+ * URL d'une image à la largeur voulue par le contexte d'affichage.
+ *
+ * Certaines sources distantes (Unsplash, et les CDN d'images en général)
+ * acceptent des paramètres de redimensionnement dans l'URL. Les annonces de
+ * démonstration stockent « ?w=400&h=300 » : suffisant pour une vignette, mais
+ * affiché dans un modal l'image est agrandie 3 à 4 fois et paraît floue.
+ * On redemande donc la même image à la taille utile plutôt que d'étirer 400 px.
+ *
+ * La hauteur est retirée volontairement : le cadrage est déjà assuré en CSS
+ * (object-cover), et imposer une hauteur ferait recadrer deux fois.
+ *
+ * Les fichiers hébergés par l'API sont renvoyés tels quels : ils n'ont pas
+ * d'API de redimensionnement (voir la note sur sharp dans le README backend).
+ */
+export const getImageUrl = (path: string | null | undefined, width: number): string => {
+  const url = getMediaUrl(path);
+  if (!url) return '';
+
+  try {
+    const parsed = new URL(url);
+    if (!parsed.searchParams.has('w')) return url;
+
+    parsed.searchParams.set('w', String(width));
+    parsed.searchParams.delete('h');
+    parsed.searchParams.set('q', '80');
+    return parsed.toString();
+  } catch {
+    // Chemin relatif ou URL non analysable : rien à adapter.
+    return url;
+  }
+};
+
+/**
+ * srcSet pour laisser le navigateur choisir la résolution selon la largeur
+ * d'affichage ET la densité d'écran : un téléphone ne télécharge pas l'image
+ * prévue pour un grand écran.
+ */
+export const getImageSrcSet = (
+  path: string | null | undefined,
+  widths: number[] = [400, 800, 1200],
+): string | undefined => {
+  const url = getMediaUrl(path);
+  if (!url) return undefined;
+
+  try {
+    if (!new URL(url).searchParams.has('w')) return undefined;
+  } catch {
+    return undefined;
+  }
+
+  return widths.map((width) => `${getImageUrl(path, width)} ${width}w`).join(', ');
+};

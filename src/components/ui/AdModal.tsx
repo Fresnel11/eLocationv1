@@ -8,7 +8,7 @@ import { BookingModal } from './BookingModal';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
-import { API_URL } from '../../config/env';
+import { API_URL, getImageUrl } from '../../config/env';
 
 interface AdModalProps {
   ad: {
@@ -95,7 +95,9 @@ export const AdModal: React.FC<AdModalProps> = ({ ad, isOpen, onClose }) => {
     ad.photos.forEach(photo => {
       media.push({
         type: 'image',
-        url: photo.startsWith('http') ? photo : `${API_URL}${photo}`
+        // 1600 px : le modal affiche l'image en grand, souvent sur un écran
+        // haute densité. Demander la vignette d'origine (400 px) la rendait floue.
+        url: getImageUrl(photo, 1600)
       });
     });
   }
