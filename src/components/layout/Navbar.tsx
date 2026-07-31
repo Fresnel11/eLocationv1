@@ -1,453 +1,373 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Settings, LogOut, ChevronDown, Home, MessageSquare, User, Calendar, Heart, Info, Phone, HelpCircle, LogIn, UserPlus } from 'lucide-react';
-// import logoImage from '../../assets/e_location_blank.png';
-import { Button } from '../ui/Button';
+import {
+  Menu, X, Settings, LogOut, ChevronDown, Search, Plus, LayoutDashboard,
+  MessageSquare, User, Calendar, Heart, Info, Phone, HelpCircle, LogIn,
+  UserPlus, Gift, Shield,
+} from 'lucide-react';
 import { NotificationBell } from '../ui/NotificationBell';
+import { Logo } from '../ui/Logo';
 import { useAuth } from '../../context/AuthContext';
-// TODO: Messagerie - Import temporaire pour évutter les erreurs
-import { useMessages } from '../../context/MessagesContext';
+
+// TODO: Messagerie — réactiver le lien /messages une fois la route décommentée dans App.tsx.
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const AUTH_LINKS: NavItem[] = [
+  { to: '/requests', label: 'Demandes', icon: MessageSquare },
+  { to: '/bookings', label: 'Réservations', icon: Calendar },
+  { to: '/favorites', label: 'Favoris', icon: Heart },
+];
+
+const GUEST_LINKS: NavItem[] = [
+  { to: '/about', label: 'À propos', icon: Info },
+  { to: '/contact', label: 'Contact', icon: Phone },
+  { to: '/faq', label: 'FAQ', icon: HelpCircle },
+];
+
+const AVATAR_COLORS = [
+  'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
+  'bg-indigo-500', 'bg-red-500', 'bg-amber-500', 'bg-teal-500',
+];
+
+const getAvatarColor = (name?: string | null) => {
+  const hash = String(name ?? '').split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+};
+
+const getInitials = (firstName?: string | null, lastName?: string | null) => {
+  const initials = `${String(firstName ?? '').charAt(0)}${String(lastName ?? '').charAt(0)}`.toUpperCase();
+  return initials || '?';
+};
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
   const { user, logout } = useAuth();
-  // TODO: Messagerie - Hook temporaire (retourne toujours 0)
-  const { unreadCount } = useMessages();
   const navigate = useNavigate();
   const location = useLocation();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Console log pour vérifier l'image de profil
-  console.log('🔍 Navbar - User data:', user);
-  console.log('📸 Navbar - Profile picture:', user?.profilePicture);
+  const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'super_admin';
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+  const avatarSeed = `${user?.firstName ?? ''}${user?.lastName ?? ''}`;
+  const navLinks = user ? AUTH_LINKS : GUEST_LINKS;
+
+  // Actif aussi sur les sous-routes : /requests/42 surligne « Demandes ».
+  const isActive = useCallback(
+    (path: string) => location.pathname === path || location.pathname.startsWith(`${path}/`),
+    [location.pathname],
+  );
+
+  // La barre se compacte au défilement pour libérer de la hauteur utile.
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Fermeture du menu utilisateur au clic extérieur.
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [isUserMenuOpen]);
+
+  // Échap ferme le menu ouvert.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setIsUserMenuOpen(false);
+      setIsMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Empêche le défilement de l'arrière-plan quand le tiroir mobile est ouvert.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, [isMenuOpen]);
+
+  // Toute navigation referme les menus.
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
     navigate('/');
     setIsUserMenuOpen(false);
+    setIsMenuOpen(false);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
+  const desktopLinkClass = (path: string) =>
+    `relative px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+      isActive(path)
+        ? 'text-blue-700 bg-blue-50'
+        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+    }`;
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const drawerLinkClass = (path: string) =>
+    `flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-colors ${
+      isActive(path)
+        ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'
+        : 'text-slate-700 hover:bg-slate-100'
+    }`;
 
-  const getAvatarColor = (name?: string | null) => {
-    const colors = [
-      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
-      'bg-indigo-500', 'bg-red-500', 'bg-yellow-500', 'bg-teal-500'
-    ];
-    const hash = String(name ?? '').split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    return colors[Math.abs(hash) % colors.length];
+  const avatar = (size: 'sm' | 'lg') => {
+    const box = size === 'sm' ? 'h-9 w-9 text-xs' : 'h-11 w-11 text-sm';
+    return user?.profilePicture ? (
+      <img src={user.profilePicture} alt="" className={`${box} rounded-full object-cover ring-2 ring-white`} />
+    ) : (
+      <span
+        className={`${box} ${getAvatarColor(avatarSeed)} flex items-center justify-center rounded-full font-bold text-white ring-2 ring-white`}
+      >
+        {getInitials(user?.firstName, user?.lastName)}
+      </span>
+    );
   };
-
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    const initials = `${String(firstName ?? '').charAt(0)}${String(lastName ?? '').charAt(0)}`.toUpperCase();
-    return initials || '?';
-  };
-
-  // Nom complet sûr : évite `undefined undefined` si l'objet user est incomplet.
-  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
-  const avatarSeed = `${user?.firstName ?? ''}${user?.lastName ?? ''}`;
 
   return (
     <>
-      <nav className="bg-white/95 backdrop-blur-xl shadow-xl sticky top-0 z-50 border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <Link to="/" className="flex items-center group hover:scale-105 transition-all duration-300">
-              {/* <img src={logoImage} alt="eLocation Bénin" className="h-10 w-10 mr-3" /> */}
-              <span className="text-3xl font-bold" style={{color: '#2563eb'}}>
-                eLocation
-              </span>
-            </Link>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white"
+      >
+        Aller au contenu
+      </a>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-3 ml-16">
-            <Link 
-              to="/ads" 
-              className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                location.pathname === '/ads' 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-              }`}
+      <header
+        className={`sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl transition-all duration-300 ${
+          isScrolled ? 'border-slate-200 shadow-sm' : 'border-transparent'
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className={`flex items-center gap-4 transition-all duration-300 ${isScrolled ? 'h-[4.5rem]' : 'h-20'}`}>
+
+            <Link
+              to="/"
+              aria-label="eLocation Bénin, accueil"
+              className="group shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
-              Annonces
+              <Logo className="hidden sm:inline-flex" />
+              <Logo markOnly className="sm:hidden" />
             </Link>
 
-            {user && (
-              <>
-                <Link 
-                  to="/requests" 
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/requests' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  Demandes
+            {/* Navigation principale — la recherche vit dans le hero, pas ici. */}
+            <nav aria-label="Navigation principale" className="ml-2 hidden items-center gap-1 lg:flex">
+              <Link to="/ads" className={desktopLinkClass('/ads')} aria-current={isActive('/ads') ? 'page' : undefined}>
+                Annonces
+              </Link>
+              {navLinks.map(({ to, label }) => (
+                <Link key={to} to={to} className={desktopLinkClass(to)} aria-current={isActive(to) ? 'page' : undefined}>
+                  {label}
                 </Link>
-                {/* TODO: Messagerie - À implémenter plus tard */}
-                {/* <Link 
-                  to="/messages" 
-                  className={`relative px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/messages' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  Messages
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </Link> */}
-              </>
-            )}
-            {user && (
-              <>
-                <Link 
-                  to="/bookings" 
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/bookings' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  Réservations
-                </Link>
-                <Link 
-                  to="/favorites" 
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/favorites' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  Favoris
-                </Link>
-              </>
-            )}
-            {!user && (
-              <>
-                <Link 
-                  to="/about" 
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/about' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  À propos
-                </Link>
-                <Link 
-                  to="/contact" 
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/contact' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  Contact
-                </Link>
-                <Link 
-                  to="/faq" 
-                  className={`px-6 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/faq' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  FAQ
-                </Link>
-              </>
-            )}
-          </div>
+              ))}
+            </nav>
 
-            <div className="lg:hidden flex items-center space-x-3">
-              {user && <NotificationBell />}
+            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+              {user ? (
+                <>
+                  <Link
+                    to="/create-ad"
+                    className="hidden items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:inline-flex"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden lg:inline">Publier</span>
+                  </Link>
+
+                  <NotificationBell />
+
+                  <div className="relative hidden md:block" ref={userMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsUserMenuOpen((open) => !open)}
+                      aria-expanded={isUserMenuOpen}
+                      aria-haspopup="menu"
+                      aria-label="Menu du compte"
+                      className="flex items-center gap-2 rounded-2xl p-1 pr-2 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    >
+                      {avatar('sm')}
+                      <ChevronDown
+                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    {isUserMenuOpen && (
+                      <div
+                        role="menu"
+                        className="absolute right-0 z-[60] mt-2 w-72 animate-slide-down overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5"
+                      >
+                        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-4">
+                          {avatar('lg')}
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-slate-900">{fullName || 'Mon compte'}</p>
+                            <p className="truncate text-xs text-slate-500">{user.email || user.phone}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-1.5">
+                          <DropdownLink to={`/user/${user.id}`} icon={User} label="Mon profil" />
+                          <DropdownLink to="/dashboard" icon={LayoutDashboard} label="Tableau de bord" />
+                          <DropdownLink to="/referrals" icon={Gift} label="Parrainage" />
+                          <DropdownLink to="/settings" icon={Settings} label="Paramètres" />
+                          {isAdmin && <DropdownLink to="/admin" icon={Shield} label="Administration" />}
+                        </div>
+
+                        <div className="border-t border-slate-100 p-1.5">
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={handleLogout}
+                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Déconnexion
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="hidden items-center gap-2 md:flex">
+                  <Link
+                    to="/login"
+                    className="rounded-2xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  >
+                    Connexion
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  >
+                    S'inscrire
+                  </Link>
+                </div>
+              )}
+
               <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                type="button"
+                onClick={() => setIsMenuOpen(true)}
+                aria-expanded={isMenuOpen}
+                aria-label="Ouvrir le menu"
+                className="rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:hidden"
               >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Tiroir mobile */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[70] lg:hidden">
+          <div
+            className="absolute inset-0 animate-fade-in bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setIsMenuOpen(false)}
+            aria-hidden="true"
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navigation"
+            className="absolute right-0 top-0 flex h-full w-[min(22rem,88vw)] animate-slide-up flex-col bg-white shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4">
+              <Logo />
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Fermer le menu"
+                className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <X className="h-6 w-6" />
               </button>
             </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center space-x-6">
-            {user ? (
-              <div className="flex items-center space-x-6">
-                <NotificationBell />
-                <div className="relative" ref={userMenuRef}>
-                  <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    {user.profilePicture ? (
-                      <img
-                        src={user.profilePicture}
-                        alt={fullName}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(avatarSeed)}`}>
-                        {getInitials(user?.firstName, user?.lastName)}
-                      </div>
-                    )}
-                    <span className="text-gray-900 font-medium text-sm whitespace-nowrap">
-                      {fullName}
-                    </span>
-                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${
-                      isUserMenuOpen ? 'rotate-180' : ''
-                    }`} />
-                  </button>
-
-                  {/* Menu déroulant */}
-                  {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[60]">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
-                        <p className="text-xs text-gray-500 truncate" title={user.email || user.phone || undefined}>{user.email || user.phone}</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          navigate(`/user/${user.id}`);
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <User className="h-4 w-4 mr-3 text-gray-400" />
-                        Profil
-                      </button>
-                      <button
-                        onClick={() => {
-                          navigate('/settings');
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <Settings className="h-4 w-4 mr-3 text-gray-400" />
-                        Paramètres
-                      </button>
-                      <div className="border-t border-gray-100 mt-1 pt-1">
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          <LogOut className="h-4 w-4 mr-3" />
-                          Déconnexion
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="lg" className="rounded-2xl hover:bg-blue-50 font-semibold" asChild>
-                  <Link to="/login">Connexion</Link>
-                </Button>
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-lg font-semibold" asChild>
-                  <Link to="/register">S'inscrire</Link>
-                </Button>
-              </div>
-            )}
-          </div>
-
-          </div>
-        </div>
-      </nav>
-
-      {isMenuOpen && (
-        <div className="lg:hidden fixed top-20 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-xl z-40">
-          <div className="px-4 py-4 space-y-3 max-h-[calc(100vh-5rem)] overflow-y-auto">
-            <Link 
-              to="/ads" 
-              onClick={() => setIsMenuOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                location.pathname === '/ads' 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-              }`}
-            >
-              <Home className="h-5 w-5" />
-              Annonces
-            </Link>
-
-            {user && (
-              <>
-                <Link 
-                  to="/requests" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/requests' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <MessageSquare className="h-5 w-5" />
-                  Demandes
+            <div className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
+              {user && (
+                <Link to="/create-ad" className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700">
+                  <Plus className="h-5 w-5" />
+                  Publier une annonce
                 </Link>
-                {/* TODO: Messagerie - À implémenter plus tard */}
-                {/* <Link 
-                  to="/messages" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/messages' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <Mail className="h-5 w-5" />
-                  Messages
-                  {unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ml-auto">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </Link> */}
-                <Link 
-                  to="/bookings" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/bookings' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <Calendar className="h-5 w-5" />
-                  Réservations
-                </Link>
-                <Link 
-                  to="/favorites" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/favorites' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <Heart className="h-5 w-5" />
-                  Favoris
-                </Link>
-              </>
-            )}
+              )}
 
-            {!user && (
-              <>
-                <Link 
-                  to="/about" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/about' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <Info className="h-5 w-5" />
-                  À propos
-                </Link>
-                <Link 
-                  to="/contact" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/contact' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <Phone className="h-5 w-5" />
-                  Contact
-                </Link>
-                <Link 
-                  to="/faq" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all duration-200 ${
-                    location.pathname === '/faq' 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <HelpCircle className="h-5 w-5" />
-                  FAQ
-                </Link>
-              </>
-            )}
+              <Link to="/ads" className={drawerLinkClass('/ads')} aria-current={isActive('/ads') ? 'page' : undefined}>
+                <Search className="h-5 w-5" />
+                Annonces
+              </Link>
 
-            <div className="pt-4 border-t border-gray-200">
+              {navLinks.map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to} className={drawerLinkClass(to)} aria-current={isActive(to) ? 'page' : undefined}>
+                  <Icon className="h-5 w-5" />
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-100 px-4 py-4">
               {user ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    {user.profilePicture ? (
-                      <img
-                        src={user.profilePicture}
-                        alt={fullName}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${getAvatarColor(avatarSeed)}`}>
-                        {getInitials(user?.firstName, user?.lastName)}
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-gray-900">{fullName}</p>
-                      <p className="text-sm text-gray-600">Connecté</p>
+                <div className="space-y-1">
+                  <div className="mb-2 flex items-center gap-3 px-1">
+                    {avatar('lg')}
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-slate-900">{fullName || 'Mon compte'}</p>
+                      <p className="truncate text-xs text-slate-500">{user.email || user.phone}</p>
                     </div>
                   </div>
-                  <Link
-                    to={`/user/${user.id}`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-2xl transition-colors"
-                  >
+                  <Link to={`/user/${user.id}`} className={drawerLinkClass(`/user/${user.id}`)}>
                     <User className="h-5 w-5" />
-                    Profil
+                    Mon profil
                   </Link>
-                  <Link
-                    to="/settings"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-2xl transition-colors"
-                  >
+                  <Link to="/settings" className={drawerLinkClass('/settings')}>
                     <Settings className="h-5 w-5" />
                     Paramètres
                   </Link>
+                  {isAdmin && (
+                    <Link to="/admin" className={drawerLinkClass('/admin')}>
+                      <Shield className="h-5 w-5" />
+                      Administration
+                    </Link>
+                  )}
                   <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-2xl transition-colors"
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-semibold text-red-600 transition-colors hover:bg-red-50"
                   >
                     <LogOut className="h-5 w-5" />
                     Déconnexion
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <Link 
-                    to="/login" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-center gap-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-colors font-semibold"
-                  >
+                <div className="space-y-2">
+                  <Link to="/login" className="flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-semibold text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-100">
                     <LogIn className="h-5 w-5" />
                     Connexion
                   </Link>
-                  <Link 
-                    to="/register" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-center gap-3 px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-colors font-semibold"
-                  >
+                  <Link to="/register" className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700">
                     <UserPlus className="h-5 w-5" />
                     S'inscrire
                   </Link>
@@ -460,3 +380,18 @@ export const Navbar: React.FC = () => {
     </>
   );
 };
+
+const DropdownLink: React.FC<{
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}> = ({ to, icon: Icon, label }) => (
+  <Link
+    to={to}
+    role="menuitem"
+    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+  >
+    <Icon className="h-4 w-4 text-slate-400" />
+    {label}
+  </Link>
+);

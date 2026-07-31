@@ -5,7 +5,6 @@ import { Footer } from './components/layout/Footer';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
-import { VerifyOtpPage } from './pages/auth/VerifyOtpPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordOtpPage } from './pages/auth/ResetPasswordOtpPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
@@ -72,22 +71,31 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import PaymentPage from './pages/PaymentPage';
 import PaymentReturnPage from './pages/PaymentReturnPage';
 
+// Pages d'authentification : plein écran, avec leur propre en-tête (AuthLayout).
+const AUTH_ROUTES = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password-otp',
+  '/reset-password',
+];
+
 function AppContent() {
   const location = useLocation();
   const { user } = useAuth();
-  // TODO: Messagerie - Retirer '/messages' quand implémenté
-  const hideFooter = /* location.pathname === '/messages' || */ location.pathname.startsWith('/admin') || !!user;
   const isAdminRoute = location.pathname.startsWith('/admin');
-  
+  const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
+  // TODO: Messagerie - Retirer '/messages' quand implémenté
+  const hideFooter = /* location.pathname === '/messages' || */ isAdminRoute || isAuthRoute || !!user;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {!isAdminRoute && <Navbar />}
-      <main>
+      {!isAdminRoute && !isAuthRoute && <Navbar />}
+      <main id="main-content">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password-otp" element={<ResetPasswordOtpPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />

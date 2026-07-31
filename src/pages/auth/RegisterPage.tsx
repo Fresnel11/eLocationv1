@@ -1,13 +1,94 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, ArrowLeft, User, Phone, Shield, CheckCircle } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Check,
+  Gift,
+  Lock,
+  Mail,
+  Rocket,
+  ShieldCheck,
+  User,
+  UserCheck,
+} from 'lucide-react';
+import { AuthLayout, type AuthHighlight } from '../../components/auth/AuthLayout';
+import { AuthField } from '../../components/auth/AuthField';
+import { PhoneField, isPhoneComplete } from '../../components/auth/PhoneField';
+import { AuthAlert } from '../../components/auth/AuthAlert';
+import { AuthSubmitButton } from '../../components/auth/AuthSubmitButton';
+import { PasswordStrength } from '../../components/auth/PasswordStrength';
+import { getPasswordError } from '../../components/auth/passwordRules';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import logoImage from '../../assets/e_location.png';
+
+const HIGHLIGHTS: AuthHighlight[] = [
+  {
+    icon: Rocket,
+    title: 'Publiez en quelques minutes',
+    description: 'Votre première annonce est en ligne dès la fin de l\'inscription.',
+    tint: 'bg-orange-500/25',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Un compte, deux usages',
+    description: 'Louez vos biens et réservez ceux des autres avec le même profil.',
+    tint: 'bg-cyan-500/25',
+  },
+  {
+    icon: Gift,
+    title: 'Parrainage récompensé',
+    description: 'Un code de parrainage ? Saisissez-le à l\'étape contact.',
+    tint: 'bg-green-500/25',
+  },
+];
+
+const STEPS = [
+  { id: 1, title: 'Identité', description: 'Qui êtes-vous ?' },
+  { id: 2, title: 'Contact', description: 'Comment vous joindre' },
+  { id: 3, title: 'Sécurité', description: 'Protégez votre compte' },
+] as const;
+
+/** Sélecteur segmenté : plus lisible qu'un <select> sur mobile. */
+const GenderPicker: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+}> = ({ value, onChange, error }) => (
+  <div>
+    <span className="mb-1.5 block text-sm font-medium text-slate-700">
+      Sexe<span className="ml-0.5 text-blue-600">*</span>
+    </span>
+    <div className="grid grid-cols-2 gap-3">
+      {['masculin', 'féminin'].map((option) => {
+        const selected = value === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onChange(option)}
+            aria-pressed={selected}
+            className={`h-12 rounded-xl border text-[0.95rem] font-medium capitalize transition-all duration-200 ${
+              selected
+                ? 'border-blue-600 bg-blue-50 text-blue-700 ring-4 ring-blue-500/10'
+                : error
+                  ? 'border-red-300 bg-white text-slate-600 hover:border-red-400'
+                  : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:border-slate-300 hover:bg-white'
+            }`}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
+    {error && (
+      <p role="alert" className="mt-1.5 text-sm text-red-600">
+        {error}
+      </p>
+    )}
+  </div>
+);
 
 export const RegisterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(() => {
@@ -32,20 +113,11 @@ export const RegisterPage: React.FC = () => {
     const saved = sessionStorage.getItem('registerAcceptedTerms');
     return saved ? JSON.parse(saved) : false;
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState('');
   const { register, loading } = useAuth();
   const { success, error } = useToast();
   const navigate = useNavigate();
-
-  const steps = [
-    { id: 1, title: 'Informations personnelles', icon: User, description: 'Vos nom et prénom' },
-    { id: 2, title: 'Contact & Compte', icon: Phone, description: 'Téléphone et type de compte' },
-    { id: 3, title: 'Sécurité', icon: Shield, description: 'Mot de passe et confirmation' }
-  ];
-
-
 
   const handleChange = (field: string, value: string) => {
     const newFormData = { ...formData, [field]: value };
@@ -56,9 +128,13 @@ export const RegisterPage: React.FC = () => {
     }
   };
 
-  const validateStep = (step: number): boolean => {
+  /**
+   * Calcul pur des erreurs d'une étape : sert à la fois à l'affichage au clic
+   * et à l'état actif du bouton final, qui ne peut donc pas se désynchroniser.
+   */
+  const collectErrors = (step: number): Record<string, string> => {
     const newErrors: Record<string, string> = {};
-    
+
     if (step === 1) {
       if (!formData.firstName.trim()) newErrors.firstName = 'Le prénom est requis';
       if (!formData.lastName.trim()) newErrors.lastName = 'Le nom de famille est requis';
@@ -78,251 +154,276 @@ export const RegisterPage: React.FC = () => {
       }
       if (!formData.gender) newErrors.gender = 'Le sexe est requis';
     }
-    
+
     if (step === 2) {
-      if (!formData.phone.trim()) {
+      // Le champ pré-remplit l'indicatif : au-delà de 4 chiffres seulement,
+      // l'utilisateur a réellement commencé à saisir un numéro.
+      const phoneDigits = formData.phone.replace(/\D/g, '');
+      if (phoneDigits.length <= 4) {
         newErrors.phone = 'Le numéro de téléphone est requis';
-      } else if (!/^\+[1-9]\d{1,14}$/.test(formData.phone)) {
-        newErrors.phone = 'Le numéro doit être au format international (+22999154678)';
+      } else if (!isPhoneComplete(formData.phone)) {
+        newErrors.phone = 'Ce numéro ne correspond pas au format du pays sélectionné';
       }
-      if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      if (!formData.email.trim()) {
+        newErrors.email = 'L\'email est requis';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = 'Email invalide';
       }
     }
-    
+
     if (step === 3) {
-      if (!formData.password) {
-        newErrors.password = 'Le mot de passe est requis';
-      } else if (formData.password.length < 6) {
-        newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+      const passwordError = getPasswordError(formData.password);
+      if (passwordError) {
+        newErrors.password = passwordError;
       }
-      if (formData.password !== formData.confirmPassword) {
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Veuillez confirmer votre mot de passe';
+      } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
       }
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    return newErrors;
   };
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      const newStep = Math.min(currentStep + 1, 3);
-      setCurrentStep(newStep);
-      sessionStorage.setItem('registerStep', newStep.toString());
+  const validateStep = (step: number): boolean => {
+    const stepErrors = collectErrors(step);
+    setErrors(stepErrors);
+    return Object.keys(stepErrors).length === 0;
+  };
+
+  /** Signale l'erreur dès que l'utilisateur quitte le champ, sans attendre l'envoi. */
+  const showErrorOnBlur = (field: string) => {
+    const stepErrors = collectErrors(currentStep);
+    if (stepErrors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: stepErrors[field] }));
     }
   };
 
-  const prevStep = () => {
-    const newStep = Math.max(currentStep - 1, 1);
-    setCurrentStep(newStep);
-    sessionStorage.setItem('registerStep', newStep.toString());
+  const goToStep = (step: number) => {
+    setCurrentStep(step);
+    sessionStorage.setItem('registerStep', step.toString());
   };
 
+  const nextStep = () => {
+    if (validateStep(currentStep)) goToStep(Math.min(currentStep + 1, 3));
+  };
+
+  const prevStep = () => goToStep(Math.max(currentStep - 1, 1));
+
   const handleSubmit = async () => {
-    if (!validateStep(3) || !acceptedTerms) return;
-    
+    if (!validateStep(3)) return;
+    if (!acceptedTerms) {
+      setFormError('Vous devez accepter les conditions d\'utilisation pour créer votre compte.');
+      return;
+    }
+
+    setFormError('');
+
     try {
-      const result = await register(formData.firstName, formData.lastName, formData.phone, formData.password, formData.email || undefined, formData.referralCode || undefined, acceptedTerms, formData.birthDate, formData.gender as 'masculin' | 'féminin');
+      await register(formData.firstName, formData.lastName, formData.phone, formData.password, formData.email || undefined, formData.referralCode || undefined, acceptedTerms, formData.birthDate, formData.gender as 'masculin' | 'féminin');
       // Nettoyer le sessionStorage après inscription réussie
       sessionStorage.removeItem('registerFormData');
       sessionStorage.removeItem('registerStep');
       sessionStorage.removeItem('registerAcceptedTerms');
-      
+
       success(
-        'Inscription réussie !', 
-        'Votre compte a été créé avec succès. Vérifiez votre téléphone pour activer votre compte.'
+        'Inscription réussie !',
+        'Bienvenue sur eLocation Bénin, votre compte est prêt.'
       );
-      navigate('/verify-otp', { 
-        state: { 
-          phone: result.phone, 
-          email: formData.email
-        } 
-      });
+      // Même destination que la connexion : l'utilisateur arrive sur les annonces.
+      navigate('/ads');
     } catch (err: any) {
-      error(
-        'Erreur d\'inscription',
-        err.response?.data?.message || 'Une erreur est survenue lors de l\'inscription'
-      );
-      setErrors({ phone: 'Une erreur est survenue lors de l\'inscription' });
+      const message = err.response?.data?.message;
+      const readable = Array.isArray(message) ? message.join(', ') : message;
+      setFormError(readable || 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.');
+      error('Erreur d\'inscription', readable || 'Une erreur est survenue lors de l\'inscription');
     }
   };
+
+  // Enter valide l'étape courante plutôt que de soumettre un formulaire incomplet.
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (currentStep < 3) nextStep();
+    else handleSubmit();
+  };
+
+  const passwordsMatch =
+    formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword;
+
+  // Le bouton final ne s'active qu'une fois toutes les règles satisfaites et
+  // les conditions acceptées. Les erreurs restent affichées sous les champs
+  // concernés, pour que l'utilisateur sache toujours ce qui manque.
+  const canSubmit = Object.keys(collectErrors(3)).length === 0 && acceptedTerms;
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <User className="h-12 w-12 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Informations personnelles</h3>
-              <p className="text-gray-600">Commençons par vos nom et prénom</p>
+          <div className="space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <AuthField
+                label="Prénom"
+                icon={User}
+                value={formData.firstName}
+                onChange={(e) => handleChange('firstName', e.target.value)}
+                error={errors.firstName}
+                required
+                autoFocus
+                autoComplete="given-name"
+                placeholder="Jean"
+              />
+              <AuthField
+                label="Nom de famille"
+                icon={User}
+                value={formData.lastName}
+                onChange={(e) => handleChange('lastName', e.target.value)}
+                error={errors.lastName}
+                required
+                autoComplete="family-name"
+                placeholder="Dupont"
+              />
             </div>
-            <Input
-              label="Prénom"
-              type="text"
-              value={formData.firstName}
-              onChange={(e) => handleChange('firstName', e.target.value)}
-              error={errors.firstName}
-              required
-              placeholder="Jean"
-            />
-            <Input
-              label="Nom de famille"
-              type="text"
-              value={formData.lastName}
-              onChange={(e) => handleChange('lastName', e.target.value)}
-              error={errors.lastName}
-              required
-              placeholder="Dupont"
-            />
-            <Input
+
+            <AuthField
               label="Date de naissance"
               type="date"
+              icon={Calendar}
               value={formData.birthDate}
               onChange={(e) => handleChange('birthDate', e.target.value)}
               error={errors.birthDate}
               required
+              autoComplete="bday"
+              hint="La plateforme est réservée aux personnes majeures."
               max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
             />
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Sexe <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.gender}
-                onChange={(e) => handleChange('gender', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.gender ? 'border-red-500' : 'border-gray-300'
-                }`}
-                required
-              >
-                <option value="">Sélectionnez votre sexe</option>
-                <option value="masculin">Masculin</option>
-                <option value="féminin">Féminin</option>
-              </select>
-              {errors.gender && (
-                <p className="text-sm text-red-600">{errors.gender}</p>
-              )}
-            </div>
+
+            <GenderPicker
+              value={formData.gender}
+              onChange={(value) => handleChange('gender', value)}
+              error={errors.gender}
+            />
           </div>
         );
-      
+
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <Phone className="h-12 w-12 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Informations de contact</h3>
-              <p className="text-gray-600">Vos informations de contact</p>
-            </div>
-            <Input
+          <div className="space-y-5">
+            <PhoneField
               label="Numéro de téléphone"
-              type="tel"
               value={formData.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
+              onChange={(phone) => handleChange('phone', phone)}
               error={errors.phone}
               required
-              placeholder="+22999154678"
+              autoFocus
+              hint="Choisissez votre indicatif si vous n'êtes pas au Bénin."
             />
-            <Input
+
+            <AuthField
               label="Email"
               type="email"
-              required
+              icon={Mail}
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
               error={errors.email}
+              required
+              autoComplete="email"
               placeholder="votre@email.com"
+              hint="Sert à récupérer votre compte en cas d'oubli du mot de passe."
             />
-            <Input
-              label="Code de parrainage (optionnel)"
-              type="text"
+
+            <AuthField
+              label="Code de parrainage"
+              icon={Gift}
               value={formData.referralCode}
               onChange={(e) => handleChange('referralCode', e.target.value.toUpperCase())}
               placeholder="JEA123ABC"
               maxLength={10}
+              hint="Optionnel — si un proche vous a invité."
             />
-
           </div>
         );
-      
+
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <Shield className="h-12 w-12 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Sécurité</h3>
-              <p className="text-gray-600">Créez un mot de passe sécurisé</p>
-            </div>
-            <div className="relative">
-              <Input
+          <div className="space-y-5">
+            <div>
+              <AuthField
                 label="Mot de passe"
-                type={showPassword ? 'text' : 'password'}
+                icon={Lock}
+                revealable
                 value={formData.password}
                 onChange={(e) => handleChange('password', e.target.value)}
+                // La confirmation déjà saisie est revérifiée si le mot de passe change.
+                onBlur={() => formData.confirmPassword && showErrorOnBlur('confirmPassword')}
                 error={errors.password}
                 required
+                autoFocus
+                autoComplete="new-password"
                 placeholder="••••••••"
               />
-              <button
-                type="button"
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+              <PasswordStrength value={formData.password} />
             </div>
-            <div className="relative">
-              <Input
-                label="Confirmer le mot de passe"
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                error={errors.confirmPassword}
-                required
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            
-            {/* Récapitulatif */}
-            <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mt-6">
-              <h4 className="font-medium text-gray-900 mb-4 flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                Récapitulatif
-              </h4>
-              <div className="space-y-3 text-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-gray-600 mb-1 sm:mb-0">Nom complet:</span>
-                  <span className="font-medium">{formData.firstName} {formData.lastName}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-gray-600 mb-1 sm:mb-0">Téléphone:</span>
-                  <span className="font-medium">{formData.phone}</span>
-                </div>
-                {formData.email && (
-                  <div className="flex flex-col sm:flex-row sm:justify-between">
-                    <span className="text-gray-600 mb-1 sm:mb-0">Email:</span>
-                    <span className="font-medium break-all">{formData.email}</span>
-                  </div>
-                )}
 
-              </div>
+            <AuthField
+              label="Confirmer le mot de passe"
+              icon={Lock}
+              revealable
+              value={formData.confirmPassword}
+              onChange={(e) => handleChange('confirmPassword', e.target.value)}
+              onBlur={() => showErrorOnBlur('confirmPassword')}
+              error={errors.confirmPassword}
+              required
+              autoComplete="new-password"
+              placeholder="••••••••"
+              labelAction={
+                passwordsMatch ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                    <Check className="h-3.5 w-3.5" />
+                    Identiques
+                  </span>
+                ) : undefined
+              }
+            />
+
+            {/* Récapitulatif */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+              <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <UserCheck className="h-4 w-4 text-blue-600" />
+                Vérifiez vos informations
+              </h4>
+              <dl className="space-y-2.5 text-sm">
+                {[
+                  { label: 'Nom complet', value: `${formData.firstName} ${formData.lastName}` },
+                  { label: 'Téléphone', value: formData.phone },
+                  { label: 'Email', value: formData.email },
+                  { label: 'Parrainage', value: formData.referralCode },
+                ]
+                  .filter((row) => row.value?.trim())
+                  .map((row) => (
+                    <div key={row.label} className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-4">
+                      <dt className="text-slate-500">{row.label}</dt>
+                      <dd className="break-all font-medium text-slate-900 sm:text-right">{row.value}</dd>
+                    </div>
+                  ))}
+              </dl>
+              <button
+                type="button"
+                onClick={() => goToStep(1)}
+                className="mt-4 text-sm font-medium text-blue-600 underline-offset-4 transition-colors hover:text-blue-700 hover:underline"
+              >
+                Modifier mes informations
+              </button>
             </div>
-            
-            <div className="flex items-start">
+
+            <label
+              htmlFor="terms"
+              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
+                acceptedTerms
+                  ? 'border-blue-200 bg-blue-50/60'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
+              }`}
+            >
               <input
                 id="terms"
                 name="terms"
@@ -332,138 +433,145 @@ export const RegisterPage: React.FC = () => {
                   const checked = e.target.checked;
                   setAcceptedTerms(checked);
                   sessionStorage.setItem('registerAcceptedTerms', JSON.stringify(checked));
+                  if (checked) setFormError('');
                 }}
-                required
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500/30"
               />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+              <span className="text-sm leading-relaxed text-slate-600">
                 J'accepte les{' '}
-                <Link to="/terms" className="text-blue-600 hover:text-blue-500 underline">
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                >
                   conditions d'utilisation
-                </Link>
-                {' '}d'eLocation Bénin
-              </label>
-            </div>
+                </Link>{' '}
+                d'eLocation Bénin.
+              </span>
+            </label>
           </div>
         );
-      
+
       default:
         return null;
     }
   };
 
+  const activeStep = STEPS[currentStep - 1];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div className="flex justify-center">
-          <Link to="/">
-            <img src={logoImage} alt="eLocation Bénin" className="h-16 w-auto" />
+    <AuthLayout
+      wide
+      panelTitle={
+        <>
+          Votre compte,
+          <br />
+          <span className="text-cyan-300">deux minutes chrono.</span>
+        </>
+      }
+      panelSubtitle="Rejoignez la plateforme de location de référence au Bénin : louez, réservez, échangez."
+      highlights={HIGHLIGHTS}
+      title="Créer votre compte"
+      subtitle={
+        <>
+          Étape {currentStep} sur {STEPS.length} · {activeStep.description}
+        </>
+      }
+      footer={
+        <>
+          Vous avez déjà un compte ?{' '}
+          <Link
+            to="/login"
+            className="font-semibold text-blue-600 underline-offset-4 transition-colors hover:text-blue-700 hover:underline"
+          >
+            Se connecter
           </Link>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Créez votre compte
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Ou{' '}
-          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-            connectez-vous à votre compte existant
-          </Link>
-        </p>
-      </div>
+        </>
+      }
+    >
+      {/* Fil d'étapes : les étapes déjà validées restent cliquables. */}
+      <nav aria-label="Progression de l'inscription" className="mb-8">
+        <ol className="flex items-center">
+          {STEPS.map((step, index) => {
+            const isCompleted = currentStep > step.id;
+            const isActive = currentStep === step.id;
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl px-4 sm:px-0">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center">
-            {steps.map((step, index) => {
-              const StepIcon = step.icon;
-              const isActive = currentStep === step.id;
-              const isCompleted = currentStep > step.id;
-              
-              return (
-                <React.Fragment key={step.id}>
-                  <div className="flex flex-col items-center">
-                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all duration-300 ${
-                      isCompleted 
-                        ? 'bg-green-500 border-green-500 text-white' 
-                        : isActive 
-                          ? 'bg-blue-600 border-blue-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-400'
-                    }`}>
-                      {isCompleted ? (
-                        <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-                      ) : (
-                        <StepIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  {index < steps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 sm:mx-4 transition-all duration-300 ${
-                      currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
-                    }`} />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-          
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            {steps.map((step) => (
-              <div key={step.id} className="text-center">
-                <p className={`text-xs sm:text-sm font-medium ${
-                  currentStep === step.id ? 'text-blue-600' : 
-                  currentStep > step.id ? 'text-green-600' : 'text-gray-500'
-                }`}>
-                  {step.title}
-                </p>
-                <p className="text-xs text-gray-500 mt-1 hidden sm:block">{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+            return (
+              <React.Fragment key={step.id}>
+                <li className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => isCompleted && goToStep(step.id)}
+                    disabled={!isCompleted}
+                    aria-current={isActive ? 'step' : undefined}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : isActive
+                          ? 'bg-blue-600 text-white ring-4 ring-blue-500/20'
+                          : 'bg-slate-100 text-slate-400'
+                    }`}
+                  >
+                    {isCompleted ? <Check className="h-4 w-4" /> : step.id}
+                  </button>
+                  <span
+                    className={`hidden text-sm font-medium transition-colors sm:inline ${
+                      isActive ? 'text-slate-900' : isCompleted ? 'text-slate-600' : 'text-slate-400'
+                    }`}
+                  >
+                    {step.title}
+                  </span>
+                </li>
+                {index < STEPS.length - 1 && (
+                  <li aria-hidden="true" className="mx-3 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                    <span
+                      className={`block h-full rounded-full bg-blue-600 transition-all duration-500 ${
+                        currentStep > step.id ? 'w-full' : 'w-0'
+                      }`}
+                    />
+                  </li>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </ol>
+      </nav>
 
-        {/* Step Content */}
-        <Card className="shadow-xl border-0 overflow-hidden">
-          <CardContent className="p-4 sm:p-6 lg:p-8">
-            <div className="transition-all duration-500 ease-in-out transform">
-              {renderStep()}
-            </div>
-            
-            {/* Navigation Buttons */}
-            <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8 pt-6 border-t border-gray-200">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="flex items-center justify-center order-2 sm:order-1"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Précédent
-              </Button>
-              
-              {currentStep < 3 ? (
-                <Button
-                  onClick={nextStep}
-                  className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 order-1 sm:order-2"
-                >
-                  Suivant
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={loading || !acceptedTerms}
-                  className="flex items-center justify-center bg-green-600 hover:bg-green-700 order-1 sm:order-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Inscription...' : 'Créer mon compte'}
-                  <CheckCircle className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      {formError && <AuthAlert>{formError}</AuthAlert>}
+
+      <form onSubmit={handleFormSubmit} noValidate>
+        <div key={currentStep} className="animate-slide-up">{renderStep()}</div>
+
+        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={prevStep}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 px-6 text-[0.95rem] font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 sm:w-auto"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Précédent
+            </button>
+          )}
+
+          {currentStep < STEPS.length ? (
+            <AuthSubmitButton type="submit" className="sm:flex-1">
+              Continuer
+              <ArrowRight className="h-4 w-4" />
+            </AuthSubmitButton>
+          ) : (
+            <AuthSubmitButton
+              type="submit"
+              loading={loading}
+              loadingLabel="Création du compte..."
+              disabled={!canSubmit}
+              className="sm:flex-1"
+            >
+              Créer mon compte
+            </AuthSubmitButton>
+          )}
+        </div>
+      </form>
+    </AuthLayout>
   );
 };
