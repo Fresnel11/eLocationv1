@@ -14,12 +14,20 @@ import { LogoMark } from '../ui/Logo';
 import { ClickableAvatar } from '../ui/ClickableAvatar';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { LANDING_SECTIONS } from '../../pages/LandingPage';
 
-const LINKS = [
-  { to: '/ads', label: 'Catégories' },
-  { to: '/verification', label: 'Devenir un démarcheur' },
-  { to: '/terms', label: 'Termes' },
-  { to: '/faq', label: 'FAQs' },
+/**
+ * Navigation principale.
+ *
+ * `anchor` désigne une section de la page d'accueil : sur « / » le lien y fait
+ * défiler, ailleurs il ramène à l'accueil sur cette section. `to` est la
+ * destination pour les entrées qui sont de vraies pages.
+ */
+const LINKS: Array<{ label: string; to: string; anchor?: string }> = [
+  { label: 'Catégories', to: '/ads', anchor: LANDING_SECTIONS.categories },
+  { label: 'Devenir un démarcheur', to: '/verification', anchor: LANDING_SECTIONS.howItWorks },
+  { label: 'Termes', to: '/terms' },
+  { label: 'FAQs', to: '/faq' },
 ];
 
 const ACCOUNT_LINKS = [
@@ -27,6 +35,39 @@ const ACCOUNT_LINKS = [
   { to: '/referrals', label: 'Parrainage', icon: IconGift },
   { to: '/settings', label: 'Paramètres', icon: IconCog },
 ];
+
+/**
+ * Rend un lien de navigation selon le contexte :
+ * - page d'accueil + ancre  -> <a href="#..."> (défilement natif)
+ * - autre page + ancre      -> <Link to="/#..."> (retour à l'accueil)
+ * - pas d'ancre             -> <Link to="..."> classique
+ */
+const NavItem: React.FC<{
+  link: { label: string; to: string; anchor?: string };
+  isLanding: boolean;
+  className: string | ((active: boolean) => string);
+}> = ({ link, isLanding, className }) => {
+  const resolve = (active: boolean) =>
+    typeof className === 'function' ? className(active) : className;
+
+  if (link.anchor) {
+    return isLanding ? (
+      <a href={`#${link.anchor}`} className={resolve(false)}>
+        {link.label}
+      </a>
+    ) : (
+      <Link to={`/#${link.anchor}`} className={resolve(false)}>
+        {link.label}
+      </Link>
+    );
+  }
+
+  return (
+    <NavLink to={link.to} className={({ isActive }) => resolve(isActive)}>
+      {link.label}
+    </NavLink>
+  );
+};
 
 /** Bouton d'action de l'en-tête : carré arrondi, discret au repos. */
 const IconAction: React.FC<{
@@ -69,6 +110,7 @@ export const AppTopBar: React.FC = () => {
   const accountRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'super_admin';
+  const isLanding = location.pathname === '/';
 
   // Une navigation ferme tout : sinon le tiroir reste ouvert sur la nouvelle page.
   useEffect(() => {
@@ -102,19 +144,18 @@ export const AppTopBar: React.FC = () => {
 
         <nav className="hidden items-center gap-7 md:flex">
           {LINKS.map((link) => (
-            <NavLink
+            <NavItem
               key={link.label}
-              to={link.to}
-              className={({ isActive }) =>
+              link={link}
+              isLanding={isLanding}
+              className={(active) =>
                 `text-sm transition-colors ${
-                  isActive
+                  active
                     ? 'font-semibold text-slate-900'
                     : 'font-medium text-slate-600 hover:text-slate-900'
                 }`
               }
-            >
-              {link.label}
-            </NavLink>
+            />
           ))}
         </nav>
 
@@ -256,19 +297,18 @@ export const AppTopBar: React.FC = () => {
               )}
 
               {LINKS.map((link) => (
-                <NavLink
+                <NavItem
                   key={link.label}
-                  to={link.to}
-                  className={({ isActive }) =>
+                  link={link}
+                  isLanding={isLanding}
+                  className={(active) =>
                     `block rounded-xl px-4 py-3 text-[0.95rem] transition-colors ${
-                      isActive
+                      active
                         ? 'bg-blue-50 font-semibold text-blue-700'
                         : 'font-medium text-slate-600 hover:bg-slate-50'
                     }`
                   }
-                >
-                  {link.label}
-                </NavLink>
+                />
               ))}
 
               {user && (

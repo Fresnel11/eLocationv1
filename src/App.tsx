@@ -89,16 +89,19 @@ function AppContent() {
   // Exclue de l'admin, qui a sa propre mise en page, et des pages d'auth,
   // qui s'affichent en plein écran.
   const showShell = !isAdminRoute && !isAuthRoute;
+  // Le rail est une navigation d'espace de travail : hors de propos sur la page
+  // d'accueil, qui s'adresse à des visiteurs et doit rester pleine largeur.
+  const showRail = showShell && location.pathname !== '/';
   // TODO: Messagerie - Retirer '/messages' quand implémenté
   const hideFooter = /* location.pathname === '/messages' || */ isAdminRoute || isAuthRoute || !!user;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {showShell && <AppTopBar />}
-      {showShell && <AppRail />}
+      {showRail && <AppRail />}
       {/* Décalage à gauche : le rail est en position fixe, sans cette marge il
           passerait par-dessus le contenu des pages. */}
-      <main id="main-content" className={showShell ? 'lg:pl-24' : undefined}>
+      <main id="main-content" className={showRail ? 'lg:pl-24' : undefined}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
