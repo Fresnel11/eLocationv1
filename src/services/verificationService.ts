@@ -2,7 +2,7 @@ import api from './api';
 
 export interface SubmitVerificationDto {
   selfiePhoto: string;
-  documentType: 'cni' | 'cip' | 'passport';
+  documentType: 'cni' | 'passport';
   documentFrontPhoto: string;
   documentBackPhoto?: string;
 }

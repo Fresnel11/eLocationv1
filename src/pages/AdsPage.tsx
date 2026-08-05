@@ -16,6 +16,7 @@ import { AdCard } from '../components/ads/AdCard';
 import { AdFilters, AMENITIES, CITIES, type AdFilterState } from '../components/ads/AdFilters';
 import { AnimatedIcon } from '../components/ui/AnimatedIcon';
 import { PillSelect } from '../components/ui/PillSelect';
+import { CreateAdButton } from '../components/ui/CreateAdButton';
 import { RecommendedAds } from '../components/RecommendedAds';
 import { adsService, type Ad, type AdFilters as AdQueryFilters } from '../services/adsService';
 import { recommendationsService } from '../services/recommendationsService';
@@ -280,6 +281,10 @@ export const AdsPage: React.FC = () => {
               {loading ? '(chargement...)' : `(${total} résultat${total > 1 ? 's' : ''})`}
             </span>
           </h1>
+
+          {/* Rappel de l'action principale au niveau du contenu : depuis la
+              liste, publier est le geste naturel de qui ne trouve pas son bien. */}
+          <CreateAdButton className="hidden self-start xl:inline-flex" />
 
           <div className="grid gap-3 sm:grid-cols-3 xl:w-auto xl:grid-cols-[13rem_13rem_13rem]">
             <PillSelect

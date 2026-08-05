@@ -26,8 +26,7 @@ import {
   Database,
   Trash2,
   TestTube,
-  UserCheck
-} from 'lucide-react';
+  UserCheck, BadgeCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 
@@ -52,6 +51,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
     { path: '/admin/verifications', icon: UserCheck, label: 'Vérifications' },
+    { path: '/admin/demarcheurs', icon: BadgeCheck, label: 'Démarcheurs' },
     { path: '/admin/ads', icon: Home, label: 'Annonces' },
     { path: '/admin/bookings', icon: Calendar, label: 'Réservations' },
     { path: '/admin/notifications', icon: Bell, label: 'Notifications', badge: unreadCount },

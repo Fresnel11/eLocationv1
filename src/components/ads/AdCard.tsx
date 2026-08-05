@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bath, BedDouble, Eye, ImageOff, Maximize2, Star } from 'lucide-react';
+import { DemarcheurBadge } from '../ui/DemarcheurBadge';
 import { FavoriteButton } from '../ui/FavoriteButton';
 import { getImageSrcSet, getImageUrl } from '../../config/env';
 import type { Ad } from '../../services/adsService';
@@ -121,7 +122,10 @@ export const AdCard: React.FC<AdCardProps> = ({ ad, onSelect, layout = 'grid' })
         </h3>
 
         <div className="mt-1.5 flex items-end justify-between gap-3">
-          <p className="min-w-0 truncate text-[0.82rem] text-slate-400">{ad.location}</p>
+          <p className="flex min-w-0 items-center gap-1.5 text-[0.82rem] text-slate-400">
+            <DemarcheurBadge show={ad.isDemarcheur} />
+            <span className="truncate">{ad.location}</span>
+          </p>
           <p className="shrink-0 whitespace-nowrap font-bold tracking-tight text-slate-900">
             {formatPrice(ad.price)}
             <span className="ml-1 text-xs font-medium text-slate-400">FCFA</span>

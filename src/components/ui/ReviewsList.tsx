@@ -83,7 +83,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ adId, refreshTrigger }
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                 <User className="h-5 w-5 text-white" />
               </div>
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-gray-900">
                     {review.user.firstName} {review.user.lastName}

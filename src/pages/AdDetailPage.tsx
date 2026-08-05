@@ -18,6 +18,7 @@ import IconArea from '~icons/material-symbols/square-foot';
 import IconEye from '~icons/material-symbols/visibility-outline';
 import IconShare from '~icons/material-symbols/share-outline';
 import IconShield from '~icons/material-symbols/verified-user-outline';
+import { DemarcheurBadge } from '../components/ui/DemarcheurBadge';
 import IconWifi from '~icons/material-symbols/wifi';
 import IconTv from '~icons/material-symbols/tv-outline';
 import IconAc from '~icons/material-symbols/mode-fan-outline';
@@ -30,7 +31,7 @@ import { ReviewsList } from '../components/ui/ReviewsList';
 import { ClickableAvatar } from '../components/ui/ClickableAvatar';
 import { RecommendedAds } from '../components/RecommendedAds';
 import { adsService, type Ad } from '../services/adsService';
-import { getImageSrcSet, getImageUrl, getMediaUrl } from '../config/env';
+import { getAdShareUrl, getImageSrcSet, getImageUrl, getMediaUrl } from '../config/env';
 import { useAuth } from '../context/AuthContext';
 
 type IconType = React.ComponentType<{ className?: string }>;
@@ -178,7 +179,19 @@ export const AdDetailPage: React.FC = () => {
   const period = ad.paymentMode ? PERIOD_LABELS[ad.paymentMode] : undefined;
   const hasRating = (ad.reviewsCount ?? 0) > 0;
   const ownerName = `${ad.user?.firstName ?? ''} ${ad.user?.lastName ?? ''}`.trim();
-  const whatsapp = (ad as any).whatsappLink as string | undefined;
+  /**
+   * Lien WhatsApp reconstruit à partir du numéro plutôt que d'utiliser
+   * whatsappLink tel quel : on y ajoute un message d'ouverture, pour que le
+   * locataire n'ait plus qu'à appuyer sur envoyer.
+   */
+  const whatsappNumber = ((ad as any).whatsappNumber as string | undefined)?.replace(/\D/g, '');
+  const whatsapp = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        `Bonjour, je vous contacte au sujet de votre annonce « ${ad.title} » (${formatPrice(
+          ad.price,
+        )} FCFA) vue sur eLocation Bénin. Est-elle toujours disponible ?`,
+      )}`
+    : ((ad as any).whatsappLink as string | undefined);
 
   const specs = [
     ad.bedrooms ? { icon: IconBed, label: 'Chambres', value: ad.bedrooms } : null,
@@ -189,27 +202,36 @@ export const AdDetailPage: React.FC = () => {
 
   const amenities = (ad.amenities ?? []).map((value) => AMENITY_LABELS[value]).filter(Boolean);
 
-  const contactButton = (extraClass = '') =>
+  /**
+   * WhatsApp reste accessible à tous : c'est le canal public de l'annonce.
+   * La messagerie intégrée, elle, suppose un compte — on ne l'affiche donc
+   * qu'aux personnes connectées plutôt que de les envoyer vers un mur de
+   * connexion après le clic.
+   */
+  const whatsappButton = (extraClass = '', label = 'Contacter sur WhatsApp') =>
     whatsapp ? (
       <a
         href={whatsapp}
         target="_blank"
         rel="noopener noreferrer"
-        className={`flex h-12 items-center justify-center gap-2 rounded-full bg-green-600 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(22,163,74,0.35)] transition-colors hover:bg-green-700 ${extraClass}`}
+        className={`flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(37,211,102,0.35)] transition-colors hover:bg-[#1ebe5b] ${extraClass}`}
       >
         <IconPhone />
-        Contacter sur WhatsApp
+        <span className="truncate">{label}</span>
       </a>
-    ) : (
+    ) : null;
+
+  const messageButton = (extraClass = '') =>
+    user ? (
       <button
         type="button"
-        onClick={() => (user ? navigate(`/messages?ad=${ad.id}`) : navigate('/login'))}
-        className={`flex h-12 items-center justify-center gap-2 rounded-full bg-blue-600 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] transition-colors hover:bg-blue-700 ${extraClass}`}
+        onClick={() => navigate(`/messages?ad=${ad.id}`)}
+        className={`flex h-12 items-center justify-center gap-2 rounded-full bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 ${extraClass}`}
       >
         <IconChat />
-        Contacter le propriétaire
+        <span className="truncate">Envoyer un message</span>
       </button>
-    );
+    ) : null;
 
   return (
     <div className="min-h-screen bg-[#F1F2F4] pb-24 lg:pb-10">
@@ -407,7 +429,7 @@ export const AdDetailPage: React.FC = () => {
           </div>
 
           {/* ---------- Colonne collante ---------- */}
-          <aside className="space-y-4 lg:sticky lg:top-24">
+          <aside className="min-w-0 space-y-4 lg:sticky lg:top-24">
             <Panel className="p-6">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[1.75rem] font-bold tracking-tight text-slate-900">
@@ -434,6 +456,7 @@ export const AdDetailPage: React.FC = () => {
                   <p className="truncate font-semibold text-slate-900">
                     {ownerName || 'Propriétaire'}
                   </p>
+                  <DemarcheurBadge show={(ad as any).isDemarcheur} className="mt-0.5" />
                   <Link
                     to={`/user/${ad.user?.id}`}
                     className="text-sm text-blue-600 underline-offset-4 hover:underline"
@@ -444,15 +467,29 @@ export const AdDetailPage: React.FC = () => {
               </div>
 
               <div className="mt-5 flex flex-col gap-2.5">
-                {contactButton('w-full')}
+                {whatsappButton('w-full')}
+                {messageButton('w-full')}
                 <button
                   type="button"
                   onClick={() => setShareOpen(true)}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-100 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-slate-200 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
                 >
                   <IconShare />
                   Partager
                 </button>
+
+                {!user && (
+                  <p className="pt-1 text-center text-xs leading-relaxed text-slate-400">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/login')}
+                      className="font-semibold text-blue-600 hover:underline"
+                    >
+                      Connectez-vous
+                    </button>{' '}
+                    pour écrire au propriétaire depuis la messagerie.
+                  </p>
+                )}
               </div>
             </Panel>
 
@@ -474,7 +511,11 @@ export const AdDetailPage: React.FC = () => {
       </div>
 
       {/* ---------- Barre d'action mobile ---------- */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 items-center gap-3 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden ${
+          whatsapp || user ? 'flex' : 'hidden'
+        }`}
+      >
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-bold text-slate-900">
             {formatPrice(ad.price)}
@@ -482,13 +523,16 @@ export const AdDetailPage: React.FC = () => {
             {period && <span className="ml-1 text-sm font-normal text-slate-400">{period}</span>}
           </p>
         </div>
-        {contactButton('shrink-0 px-6')}
+        {/* Libellé court : « Contacter sur WhatsApp » associé à shrink-0
+            dépassait la largeur de l'écran et provoquait un défilement
+            horizontal sur toute la page. */}
+        {whatsapp ? whatsappButton('shrink-0', 'Contacter') : messageButton('shrink-0')}
       </div>
 
       <ShareAdModal
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
-        adUrl={window.location.href}
+        adUrl={getAdShareUrl(ad.id)}
         adTitle={ad.title}
       />
 

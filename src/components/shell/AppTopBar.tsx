@@ -33,7 +33,7 @@ const GUEST_ONLY_LINKS: Array<{ label: string; to: string; anchor?: string }> = 
 ];
 
 const COMMON_LINKS: Array<{ label: string; to: string; anchor?: string }> = [
-  { label: 'Devenir un Démarcheur', to: '/verification', anchor: LANDING_SECTIONS.howItWorks },
+  { label: 'Devenir un Démarcheur', to: '/devenir-demarcheur' },
   { label: 'Termes et FAQs', to: '/terms' },
 ];
 
@@ -172,6 +172,16 @@ export const AppTopBar: React.FC = () => {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          {/* Action principale d'une place de marché : elle doit rester
+              visible en permanence, pas seulement dans le menu mobile. */}
+          <Link
+            to={user ? '/create-ad' : '/login'}
+            className="mr-2 hidden h-10 items-center gap-2 rounded-full bg-blue-600 px-5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] transition-colors hover:bg-blue-700 sm:inline-flex"
+          >
+            <IconPlus />
+            Publier une annonce
+          </Link>
+
           {user && (
             <IconAction to="/settings" label="Paramètres">
               <IconCog />

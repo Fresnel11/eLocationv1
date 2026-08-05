@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { DemarcheurBadge } from '../components/ui/DemarcheurBadge';
+import { demarcheursService } from '../services/demarcheursService';
 import { ArrowLeft, MapPin, Calendar, Phone, Mail, Star, Grid, List, MessageCircle, Settings, Edit, Share2, MoreVertical, Heart, Eye, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
@@ -99,9 +101,15 @@ export const UserProfilePage: React.FC = () => {
   const { showToast } = useToast();
 
   const isOwner = currentUser?.id === userId;
+  const [isDemarcheur, setIsDemarcheur] = useState(false);
 
   useEffect(() => {
     if (userId) {
+      // 404 attendu si la personne n'est pas démarcheur : ce n'est pas une erreur.
+      demarcheursService
+        .getPublic(userId)
+        .then(() => setIsDemarcheur(true))
+        .catch(() => setIsDemarcheur(false));
       fetchUserProfile();
       fetchUserAds();
       if (isOwner) {
@@ -346,6 +354,7 @@ export const UserProfilePage: React.FC = () => {
                   <h1 className="text-2xl font-bold text-gray-900 mt-4 mb-2">
                     {user.firstName} {user.lastName}
                   </h1>
+                  <DemarcheurBadge show={isDemarcheur} className="mb-2" />
                   <div className="flex items-center justify-center gap-2 text-gray-600 mb-3">
                     <Calendar className="h-4 w-4" />
                     <span className="text-sm">Membre depuis {formatDate(user.createdAt)}</span>
@@ -371,13 +380,18 @@ export const UserProfilePage: React.FC = () => {
                 {/* Action Buttons */}
                 {!isOwner && (
                   <div className="space-y-3 mb-6">
-                    <button
-                      onClick={handleContactUser}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                      Envoyer un message
-                    </button>
+                    {/* La messagerie intégrée suppose un compte : on masque le
+                        bouton aux visiteurs plutôt que de les heurter à un mur
+                        de connexion après le clic. WhatsApp, lui, reste ouvert. */}
+                    {currentUser && (
+                      <button
+                        onClick={handleContactUser}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                        Envoyer un message
+                      </button>
+                    )}
                     {user.whatsappNumber && (
                       <button
                         onClick={handleWhatsAppContact}
@@ -731,13 +745,16 @@ export const UserProfilePage: React.FC = () => {
             {/* Action Buttons */}
             {!isOwner && (
               <div className="flex gap-3 mb-6">
-                <button
-                  onClick={handleContactUser}
-                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  Message
-                </button>
+                {/* Masqué aux visiteurs : voir la note sur la vue bureau. */}
+                {currentUser && (
+                  <button
+                    onClick={handleContactUser}
+                    className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    Message
+                  </button>
+                )}
                 {user.whatsappNumber && (
                   <button
                     onClick={handleWhatsAppContact}

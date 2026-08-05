@@ -10,6 +10,20 @@ export const WS_URL: string = import.meta.env.VITE_WS_URL ?? 'ws://localhost:300
 export const VAPID_PUBLIC_KEY: string =
   import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
+/**
+ * Adresse publique du site, utilisée pour les liens partagés.
+ *
+ * `window.location.origin` suffit en production, mais renvoie « localhost » en
+ * développement : un lien copié depuis la machine du développeur serait
+ * inutilisable. VITE_SITE_URL permet de forcer le domaine réel.
+ */
+export const SITE_URL: string =
+  import.meta.env.VITE_SITE_URL ||
+  (typeof window !== 'undefined' ? window.location.origin : '');
+
+/** URL absolue et partageable d'une annonce. */
+export const getAdShareUrl = (adId: string): string => `${SITE_URL}/detail/${adId}`;
+
 // Construit l'URL absolue d'un média (photo, vidéo, avatar) renvoyé par l'API.
 // Les chemins déjà absolus (http/https) sont laissés tels quels.
 export const getMediaUrl = (path?: string | null): string => {

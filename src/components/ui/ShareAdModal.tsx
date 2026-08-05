@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { X, Copy, Check } from 'lucide-react';
-import { FaWhatsapp, FaFacebook, FaFacebookMessenger, FaTelegram, FaEnvelope, FaLinkedin } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebook, FaTelegram, FaEnvelope, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import IconClose from '~icons/line-md/close';
+import IconCopy from '~icons/material-symbols/content-copy-outline';
+import IconCheck from '~icons/material-symbols/check-circle-outline';
+import IconShare from '~icons/material-symbols/ios-share';
 
 interface ShareAdModalProps {
   isOpen: boolean;
@@ -9,129 +12,160 @@ interface ShareAdModalProps {
   adTitle: string;
 }
 
-export const ShareAdModal: React.FC<ShareAdModalProps> = ({
-  isOpen,
-  onClose,
-  adUrl,
-  adTitle
-}) => {
+export const ShareAdModal: React.FC<ShareAdModalProps> = ({ isOpen, onClose, adUrl, adTitle }) => {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(adUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Erreur lors de la copie:', err);
-    }
-  };
-
-  const shareText = `Découvrez cette annonce: ${adTitle} sur eLocation Bénin`;
+  const shareText = `Découvrez cette annonce : ${adTitle} sur eLocation Bénin`;
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(adUrl);
 
+  /**
+   * Ces adresses sont les points d'entrée officiels de chaque service.
+   * Sur mobile, le système les reconnaît et ouvre l'application installée ;
+   * à défaut, elles s'ouvrent dans le navigateur. Aucun schéma propriétaire
+   * du type « whatsapp:// » n'est nécessaire — il échouerait sur ordinateur.
+   */
   const shareOptions = [
     {
       name: 'WhatsApp',
       icon: FaWhatsapp,
-      color: 'bg-green-500',
-      url: `https://wa.me/?text=${encodedText}%20${encodedUrl}`
+      color: 'bg-[#25D366]',
+      url: `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
     },
     {
       name: 'Facebook',
       icon: FaFacebook,
-      color: 'bg-blue-600',
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-    },
-    {
-      name: 'Messenger',
-      icon: FaFacebookMessenger,
-      color: 'bg-blue-500',
-      url: `https://www.facebook.com/dialog/send?link=${encodedUrl}&app_id=YOUR_APP_ID`
-    },
-    {
-      name: 'Gmail',
-      icon: FaEnvelope,
-      color: 'bg-red-500',
-      url: `mailto:?subject=${encodeURIComponent(adTitle)}&body=${encodedText}%20${encodedUrl}`
+      color: 'bg-[#1877F2]',
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     },
     {
       name: 'Telegram',
       icon: FaTelegram,
-      color: 'bg-blue-400',
-      url: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`
+      color: 'bg-[#229ED9]',
+      url: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+    },
+    {
+      name: 'X',
+      icon: FaXTwitter,
+      color: 'bg-slate-900',
+      url: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
     },
     {
       name: 'LinkedIn',
       icon: FaLinkedin,
-      color: 'bg-blue-700',
-      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`
-    }
+      color: 'bg-[#0A66C2]',
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+    },
+    {
+      name: 'Email',
+      icon: FaEnvelope,
+      color: 'bg-slate-500',
+      url: `mailto:?subject=${encodeURIComponent(adTitle)}&body=${encodedText}%20${encodedUrl}`,
+    },
   ];
 
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(adUrl);
+      setCopied(true);
+      setCopyFailed(false);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // clipboard exige un contexte sécurisé : on le dit au lieu d'échouer en silence.
+      setCopyFailed(true);
+    }
+  };
+
+  /** Feuille de partage du système : c'est elle qui propose les applications installées. */
+  const nativeShare = async () => {
+    try {
+      await navigator.share({ title: adTitle, text: shareText, url: adUrl });
+      onClose();
+    } catch {
+      // Partage annulé par l'utilisateur : rien à signaler.
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-sm w-full">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="text-lg font-semibold">Partager l'annonce</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
-            <X className="h-4 w-4" />
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="w-full animate-slide-up rounded-t-[1.5rem] bg-white sm:max-w-md sm:rounded-[1.5rem]">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <h3 className="text-lg font-bold text-slate-900">Partager l'annonce</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fermer"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-[1.3rem] text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            <IconClose />
           </button>
         </div>
 
-        <div className="p-4">
-          <p className="text-sm text-gray-600 mb-4">
-            Partagez cette annonce avec vos proches
-          </p>
+        <div className="p-5">
+          {/* Proposé en premier quand le système sait le faire : c'est le chemin
+              le plus court vers les applications réellement installées. */}
+          {typeof navigator !== 'undefined' && !!navigator.share && (
+            <button
+              type="button"
+              onClick={nativeShare}
+              className="mb-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-blue-600 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] transition-colors hover:bg-blue-700"
+            >
+              <IconShare />
+              Partager avec mes applications
+            </button>
+          )}
 
-          {/* Lien à copier */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lien de l'annonce
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={adUrl}
-                readOnly
-                className="flex-1 p-3 border border-gray-300 rounded-lg bg-gray-50 text-sm"
-              />
-              <button
-                onClick={handleCopyLink}
-                className={`p-3 rounded-lg transition-colors ${
-                  copied ? 'bg-green-100 text-green-600' : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </button>
-            </div>
-            {copied && (
-              <p className="text-sm text-green-600 mt-1">Lien copié !</p>
-            )}
+          <label htmlFor="share-url" className="mb-2 block text-sm font-medium text-slate-700">
+            Lien de l'annonce
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id="share-url"
+              type="text"
+              value={adUrl}
+              readOnly
+              onFocus={(e) => e.currentTarget.select()}
+              className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600"
+            />
+            <button
+              type="button"
+              onClick={copyLink}
+              aria-label="Copier le lien"
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-[1.2rem] transition-colors ${
+                copied ? 'bg-green-100 text-green-600' : 'bg-slate-900 text-white hover:bg-slate-800'
+              }`}
+            >
+              {copied ? <IconCheck /> : <IconCopy />}
+            </button>
           </div>
-
-          {/* Options de partage */}
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-3">
-              Partager via
+          {copied && <p className="mt-2 text-sm text-green-600">Lien copié.</p>}
+          {copyFailed && (
+            <p className="mt-2 text-sm text-amber-600">
+              Copie impossible depuis ce navigateur. Sélectionnez le lien ci-dessus.
             </p>
-            <div className="grid grid-cols-3 gap-3">
-              {shareOptions.map((option) => (
-                <button
-                  key={option.name}
-                  onClick={() => window.open(option.url, '_blank')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+          )}
+
+          <p className="mb-3 mt-6 text-sm font-medium text-slate-700">Ou partager via</p>
+          <div className="grid grid-cols-3 gap-3">
+            {shareOptions.map((option) => (
+              <a
+                key={option.name}
+                href={option.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2 rounded-xl p-3 transition-colors hover:bg-slate-50"
+              >
+                <span
+                  className={`flex h-12 w-12 items-center justify-center rounded-full text-white ${option.color}`}
                 >
-                  <div className={`w-12 h-12 ${option.color} rounded-full flex items-center justify-center text-white`}>
-                    <option.icon className="h-6 w-6" />
-                  </div>
-                  <span className="text-xs text-gray-600">{option.name}</span>
-                </button>
-              ))}
-            </div>
+                  <option.icon className="h-6 w-6" />
+                </span>
+                <span className="text-xs text-slate-500">{option.name}</span>
+              </a>
+            ))}
           </div>
         </div>
       </div>

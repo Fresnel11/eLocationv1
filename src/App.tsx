@@ -12,6 +12,7 @@ import { DashboardPage } from './pages/DashboardPage';
 
 import { AdsPage } from './pages/AdsPage';
 import { AdDetailPage } from './pages/AdDetailPage';
+import { BecomeDemarcheurPage } from './pages/BecomeDemarcheurPage';
 import { CreateAdPage } from './pages/CreateAdPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
@@ -48,6 +49,7 @@ import { SessionManagement } from './pages/admin/SessionManagement';
 import { DataImportExport } from './pages/admin/DataImportExport';
 import { DataCleanup } from './pages/admin/DataCleanup';
 import { SystemTests } from './pages/admin/SystemTests';
+import { DemarcheursManagement } from './pages/admin/DemarcheursManagement';
 import { FavoritesPage } from './pages/FavoritesPage';
 
 import { Settings } from './pages/admin/Settings';
@@ -96,7 +98,9 @@ function AppContent() {
   const hideFooter = /* location.pathname === '/messages' || */ isAdminRoute || isAuthRoute || !!user;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    // overflow-x-hidden : garde-fou de coque. Un seul élément trop large
+    // décalerait sinon toute l'application vers la droite sur mobile.
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
       {showShell && <AppTopBar />}
       {showRail && <AppRail />}
       {/* Décalage à gauche : le rail est en position fixe, sans cette marge il
@@ -111,6 +115,7 @@ function AppContent() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/ads" element={<AdsPage />} />
+          <Route path="/devenir-demarcheur" element={<BecomeDemarcheurPage />} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/requests/:id" element={<ProtectedRoute><RequestDetailPage /></ProtectedRoute>} />
           {/* TODO: Messagerie - À implémenter plus tard */}
@@ -152,6 +157,7 @@ function AppContent() {
           <Route path="/admin/data-cleanup" element={<AdminRoute><DataCleanup /></AdminRoute>} />
           <Route path="/admin/system-tests" element={<AdminRoute><SystemTests /></AdminRoute>} />
           <Route path="/admin/verifications" element={<AdminRoute><AdminVerificationPage /></AdminRoute>} />
+          <Route path="/admin/demarcheurs" element={<AdminRoute><DemarcheursManagement /></AdminRoute>} />
           <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
           <Route path="/create-ad" element={<ProtectedRoute><CreateAdPage /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<UserProfilePage />} />

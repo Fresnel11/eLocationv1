@@ -30,6 +30,8 @@ export interface Ad {
   /** Agrégées par le serveur avec la liste : aucun appel supplémentaire. */
   averageRating?: number;
   reviewsCount?: number;
+  /** L'auteur de l'annonce est un démarcheur vérifié. */
+  isDemarcheur?: boolean;
 }
 
 interface AdsResponse {
@@ -129,6 +131,17 @@ export const adsService = {
     CacheService.set(cacheKey, response.data, ttl);
     
     return response.data;
+  },
+
+  /**
+   * Vide le cache local des listes d'annonces.
+   *
+   * La page 1 est mise en cache 5 minutes : sans cette purge, une annonce
+   * qu'on vient de publier reste invisible pendant tout ce délai, alors que
+   * l'API la renvoie déjà.
+   */
+  invalidateListCache(): void {
+    CacheService.invalidate('ads');
   },
 
   async getAdById(id: string): Promise<Ad> {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Upload, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { verificationService } from '../services/verificationService';
 
 interface VerificationStatus {
@@ -14,8 +13,7 @@ interface VerificationStatus {
 }
 
 const VerificationPage: React.FC = () => {
-  const { user } = useAuth();
-  const [documentType, setDocumentType] = useState<'cni' | 'cip' | 'passport'>('cni');
+  const [documentType, setDocumentType] = useState<'cni' | 'passport'>('cni');
   const [selfiePhoto, setSelfiePhoto] = useState<string>('');
   const [documentFrontPhoto, setDocumentFrontPhoto] = useState<string>('');
   const [documentBackPhoto, setDocumentBackPhoto] = useState<string>('');
@@ -148,7 +146,6 @@ const VerificationPage: React.FC = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg"
               >
                 <option value="cni">Carte Nationale d'Identité (CNI)</option>
-                <option value="cip">CIP</option>
                 <option value="passport">Passeport</option>
               </select>
             </div>
@@ -189,7 +186,6 @@ const VerificationPage: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 {documentType === 'cni' ? 'Face avant de la CNI' : 
-                 documentType === 'cip' ? 'Photo de la CIP' : 
                  'Page d\'identité du passeport'}
               </label>
               <div className="relative">
