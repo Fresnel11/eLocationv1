@@ -22,12 +22,19 @@ import { LANDING_SECTIONS } from '../../pages/LandingPage';
  * `anchor` désigne une section de la page d'accueil : sur « / » le lien y fait
  * défiler, ailleurs il ramène à l'accueil sur cette section. `to` est la
  * destination pour les entrées qui sont de vraies pages.
+ *
+ * GUEST_LINKS : liens affichés aux visiteurs non connectés.
+ * AUTH_LINKS  : liens affichés uniquement aux utilisateurs connectés.
+ * COMMON_LINKS: liens communs aux deux états.
  */
-const LINKS: Array<{ label: string; to: string; anchor?: string }> = [
-  { label: 'Catégories', to: '/ads', anchor: LANDING_SECTIONS.categories },
-  { label: 'Devenir un démarcheur', to: '/verification', anchor: LANDING_SECTIONS.howItWorks },
-  { label: 'Termes', to: '/terms' },
-  { label: 'FAQs', to: '/faq' },
+const GUEST_ONLY_LINKS: Array<{ label: string; to: string; anchor?: string }> = [
+  { label: 'Nos services', to: '/ads', anchor: LANDING_SECTIONS.categories },
+  { label: 'Qui sommes-nous', to: '/about' },
+];
+
+const COMMON_LINKS: Array<{ label: string; to: string; anchor?: string }> = [
+  { label: 'Devenir un Démarcheur', to: '/verification', anchor: LANDING_SECTIONS.howItWorks },
+  { label: 'Termes et FAQs', to: '/terms' },
 ];
 
 const ACCOUNT_LINKS = [
@@ -112,6 +119,11 @@ export const AppTopBar: React.FC = () => {
   const isAdmin = user?.role?.name === 'admin' || user?.role?.name === 'super_admin';
   const isLanding = location.pathname === '/';
 
+  // Liens de navigation : les visiteurs voient également "Nos services" et "Qui sommes-nous".
+  const navLinks = user
+    ? COMMON_LINKS
+    : [...GUEST_ONLY_LINKS, ...COMMON_LINKS];
+
   // Une navigation ferme tout : sinon le tiroir reste ouvert sur la nouvelle page.
   useEffect(() => {
     setMenuOpen(false);
@@ -143,7 +155,7 @@ export const AppTopBar: React.FC = () => {
         <span className="hidden h-7 w-px bg-slate-200 md:block" aria-hidden="true" />
 
         <nav className="hidden items-center gap-7 md:flex">
-          {LINKS.map((link) => (
+          {navLinks.map((link) => (
             <NavItem
               key={link.label}
               link={link}
@@ -160,13 +172,17 @@ export const AppTopBar: React.FC = () => {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
-          <IconAction to="/settings" label="Paramètres">
-            <IconCog />
-          </IconAction>
+          {user && (
+            <IconAction to="/settings" label="Paramètres">
+              <IconCog />
+            </IconAction>
+          )}
 
-          <IconAction to="/notifications" label="Notifications" badge={user ? unreadCount : 0}>
-            <IconBell />
-          </IconAction>
+          {user && (
+            <IconAction to="/notifications" label="Notifications" badge={unreadCount}>
+              <IconBell />
+            </IconAction>
+          )}
 
           <span className="mx-2 hidden h-7 w-px bg-slate-200 sm:block" aria-hidden="true" />
 
@@ -296,7 +312,7 @@ export const AppTopBar: React.FC = () => {
                 </div>
               )}
 
-              {LINKS.map((link) => (
+              {navLinks.map((link) => (
                 <NavItem
                   key={link.label}
                   link={link}

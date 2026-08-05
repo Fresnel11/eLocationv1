@@ -52,87 +52,10 @@ export const CreateAdPage: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploadedMedia, setUploadedMedia] = useState<{photos: string[], video?: string}>({photos: []});
   const [loading, setLoading] = useState(false);
-  const [enhancing, setEnhancing] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { success, error } = useToast();
-
-  const enhanceDescription = async () => {
-    const desc = (formData.description || '').toString().trim();
-    
-    // Vérifier qu'il y a au moins une phrase complète
-    const hasCompleteSentence = /^[A-ZÀ-ÿ].*[.!?]/.test(desc);
-    
-    if (!hasCompleteSentence) {
-      error('Phrase incomplète', 'Veuillez écrire au moins une phrase complète (qui commence par une majuscule et se termine par un point) avant d\'utiliser l\'IA.');
-      return;
-    }
-    
-    setEnhancing(true);
-    try {
-      const prompt = `Transforme cette description d'annonce de location en un texte plus attractif, professionnel et engageant pour le marché béninois.
-
-Description actuelle: ${desc}
-
-Consignes:
-- Analyse le contenu pour déterminer le type de bien/service (immobilier, véhicule, électronique, etc.)
-- Adapte le vocabulaire selon ce que tu détectes dans la description
-- Utilise un ton commercial et chaleureux
-- Ajoute des qualificatifs positifs pertinents au type de bien
-- Mets en avant les avantages et caractéristiques importantes
-- Garde un style professionnel mais accessible
-- IMPORTANT: Maximum 100 mots (environ 600 caractères)
-
-Description améliorée (max 100 mots):`;
-      
-      const response = await (window as any).puter.ai.chat(prompt, { 
-        model: "gpt-4o",
-        maxTokens: 200
-      });
-      
-      console.log('Réponse complète Puter:', response);
-      
-      const aiText = response?.result?.message?.content || response?.message?.content || response?.content || (typeof response === 'string' ? response : null);
-      
-      console.log('Texte extrait:', aiText);
-      
-      if (!aiText) {
-        console.log('Structure de la réponse:', JSON.stringify(response, null, 2));
-        error('Erreur IA', 'Impossible d\'extraire le texte généré.');
-        return;
-      }
-      
-      // S'assurer que la description respecte les contraintes
-      let cleanedResponse = aiText.trim();
-      
-      console.log('Longueur réponse IA:', cleanedResponse.length);
-      
-      if (cleanedResponse.length > 1000) {
-        // Tronquer intelligemment à la dernière phrase complète
-        const truncated = cleanedResponse.substring(0, 950);
-        const lastPeriod = truncated.lastIndexOf('.');
-        cleanedResponse = lastPeriod > 500 ? truncated.substring(0, lastPeriod + 1) : truncated + '...';
-      }
-      
-      if (cleanedResponse.length < 20) {
-        cleanedResponse = desc; // Garder l'original si trop court
-      }
-      
-      console.log('Longueur finale:', cleanedResponse.length);
-      
-      setFormData(prev => ({
-        ...prev,
-        description: cleanedResponse
-      }));
-      
-      success('Description améliorée !', 'Relisez attentivement le texte généré et modifiez-le si nécessaire avant de publier.');
-    } catch (err) {
-      error('Erreur', 'Impossible d\'améliorer la description pour le moment.');
-    } finally {
-      setEnhancing(false);
-    }
-  };
 
   const amenitiesList = [
     { value: 'wifi', label: 'WiFi' },
@@ -382,20 +305,7 @@ Description améliorée (max 100 mots):`;
 
           {/* Description */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <button
-                type="button"
-                onClick={enhanceDescription}
-                disabled={!/^[A-ZÀ-ÿ].*[.!?]/.test((formData.description || '').toString().trim()) || enhancing}
-                className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-md hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {enhancing ? '✨ Amélioration...' : '✨ Améliorer avec IA'}
-              </button>
-            </div>
-            <p className="text-xs text-blue-600 mb-2">
-              💡 Pour utiliser l'amélioration IA, écrivez d'abord une phrase complète qui commence par une majuscule et se termine par un point.
-            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}

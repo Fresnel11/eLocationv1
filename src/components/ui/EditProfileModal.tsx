@@ -29,7 +29,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const { success, error } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
   const [showCrop, setShowCrop] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [formData, setFormData] = useState({
@@ -58,33 +57,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      error('Erreur', 'La taille du fichier ne doit pas dépasser 2MB');
+    const analysisResult: ImageAnalysisResult = await analyzeProfileImage(file);
+    if (!analysisResult.isValid) {
+      error('Image non valide', analysisResult.reason || 'Cette image ne respecte pas nos critères.');
       return;
     }
 
-    setAnalyzing(true);
-
-    try {
-      const analysisResult: ImageAnalysisResult = await analyzeProfileImage(file);
-      
-      if (!analysisResult.isValid) {
-        error('Image non valide', analysisResult.reason || 'Cette image ne respecte pas nos critères de photo de profil');
-        setAnalyzing(false);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        setSelectedImage(reader.result as string);
-        setShowCrop(true);
-        setAnalyzing(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      error('Erreur', 'Impossible d\'analyser l\'image');
-      setAnalyzing(false);
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedImage(reader.result as string);
+      setShowCrop(true);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleCropComplete = async (croppedBlob: Blob) => {
@@ -137,62 +121,40 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Avatar */}
-            <div className="text-center">
-              <div className="relative inline-block">
-                {analyzing ? (
-                  <div className="w-24 h-24 bg-gray-100 rounded-full flex flex-col items-center justify-center mx-auto border-2 border-gray-200">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-1"></div>
-                    <span className="text-xs text-gray-500">Analyse...</span>
-                  </div>
-                ) : formData.avatar ? (
-                  <img
-                    src={formData.avatar.startsWith('http') ? formData.avatar : `${API_URL}${formData.avatar}`}
-                    alt="Avatar"
-                    className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200"
-                    onError={(e) => {
-                      console.log('Avatar load error:', formData.avatar);
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto">
-                    <Camera className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={analyzing}
-                  className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors shadow-lg disabled:bg-gray-400"
-                >
-                  <Upload className="h-4 w-4" />
-                </button>
+              {/* Avatar */}
+              <div className="text-center">
+                <div className="relative inline-block">
+                  {formData.avatar ? (
+                    <img
+                      src={formData.avatar.startsWith('http') ? formData.avatar : `${API_URL}${formData.avatar}`}
+                      alt="Avatar"
+                      className="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto">
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </button>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <p className="text-sm text-gray-500 mt-2">Cliquez pour changer votre photo</p>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={analyzing}
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                {analyzing ? 'Analyse de l\'image en cours...' : 'Cliquez pour changer votre photo'}
-              </p>
-              
-              {/* Critères de validation */}
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs font-medium text-blue-800 mb-2">Critères requis pour la photo :</p>
-                <ul className="text-xs text-blue-700 space-y-1">
-                  <li>• Visage humain clair et identifiable</li>
-                  <li>• Image nette et de bonne qualité</li>
-                  <li>• Personne clairement visible</li>
-                  <li>• Photo authentique (non générée par IA)</li>
-                  <li>• Pas d'objet, animal ou dessin</li>
-                </ul>
-              </div>
-            </div>
 
           {/* Bio */}
           <div>

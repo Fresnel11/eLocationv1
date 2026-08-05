@@ -43,13 +43,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
 
   const startChatSession = async () => {
     try {
-      // Message de bienvenue de l'IA
+      // Message de bienvenue du support
       setMessages([{
         id: 'welcome',
-        message: 'Bonjour ! Je suis l\'assistant virtuel d\'eLocation Bénin. Je suis là pour vous aider avec toutes vos questions concernant notre plateforme de location. Comment puis-je vous assister ?',
+        message: 'Bonjour ! Bienvenue sur le support eLocation Bénin. Pour toute question, vous pouvez nous écrire ici. Nous vous orienterons vers le bon canal d\'aide.',
         isAgent: true,
         createdAt: new Date().toISOString(),
-        user: { firstName: 'Assistant IA', lastName: 'eLocation' }
+        user: { firstName: 'Support', lastName: 'eLocation' }
       }]);
     } catch (error) {
       console.error('Erreur démarrage chat:', error);
@@ -87,38 +87,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
     setMessages(prev => [...prev, loadingMessage]);
 
     try {
-      // Prompt pour l'IA avec contexte eLocation
-      const prompt = `Tu es l'assistant virtuel d'eLocation Bénin, une plateforme de location au Bénin. Tu dois répondre uniquement aux questions concernant :
-- La plateforme eLocation (inscription, connexion, navigation)
-- La publication d'annonces de location
-- La recherche et réservation de biens
-- Les catégories disponibles (immobilier, véhicules, électroménager, événementiel, professionnel, loisirs)
-- Les fonctionnalités (favoris, messages, notifications, etc.)
-- Les problèmes techniques sur la plateforme
-- Les politiques et conditions d'utilisation
+      // Réponse statique orientant vers les canaux de support
+      const supportMessage =
+        'Merci pour votre message. Pour obtenir de l\'aide, veuillez consulter notre FAQ ou contacter notre service client à elocationcontact@gmail.com ou au +229 0199154678. Nous vous répondrons dans les plus brefs délais.';
 
-Si la question n'est pas liée à eLocation, réponds poliment que tu es l'assistant virtuel d'eLocation et que tu ne peux répondre qu'aux questions concernant la plateforme.
-
-Si tu ne peux pas répondre à une question spécifique sur eLocation, demande à l'utilisateur de contacter le service client à elocationcontact@gmail.com ou +229 0199154678.
-
-Question de l'utilisateur : ${messageText}
-
-Réponds de manière concise et utile :`;
-
-      const response = await (window as any).puter.ai.chat(prompt, {
-        model: "gpt-4o",
-        maxTokens: 300
-      });
-
-      const aiText = response?.result?.message?.content || response?.message?.content || response?.content || 'Désolé, je rencontre un problème technique. Veuillez contacter notre service client à elocationcontact@gmail.com';
-
-      // Remplacer le loader par la réponse
       const botResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        message: aiText.trim(),
+        message: supportMessage,
         isAgent: true,
         createdAt: new Date().toISOString(),
-        user: { firstName: 'Assistant IA', lastName: 'eLocation' }
+        user: { firstName: 'Support', lastName: 'eLocation' }
       };
       setMessages(prev => prev.filter(msg => msg.id !== loaderId).concat(botResponse));
     } catch (error) {
@@ -164,7 +142,7 @@ Réponds de manière concise et utile :`;
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
           <div>
-            <h3 className="font-medium">Assistant IA eLocation</h3>
+            <h3 className="font-medium">Support eLocation</h3>
             <p className="text-xs opacity-90">En ligne</p>
           </div>
         </div>
@@ -204,7 +182,7 @@ Réponds de manière concise et utile :`;
                 )}
               </div>
               <p className="text-xs text-gray-500 mt-1 px-1">
-                {message.isAgent ? 'Assistant IA' : 'Vous'} • {new Date(message.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                {message.isAgent ? 'Support' : 'Vous'} • {new Date(message.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
             <div className={`${message.isAgent ? 'order-1 mr-2' : 'order-2 ml-2'} relative`}>
