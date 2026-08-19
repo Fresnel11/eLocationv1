@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { websocketService } from '../services/websocketService';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 interface Notification {
   id: string;
@@ -42,7 +43,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getStoredToken();
     if (!token) return;
 
     // Charger les notifications existantes
@@ -125,7 +126,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const response = await fetch(`${API_URL}/notifications/${id}/read`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getStoredToken()}`
         }
       });
       
@@ -147,7 +148,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getStoredToken()}`
         }
       });
       
@@ -167,7 +168,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const response = await fetch(`${API_URL}/notifications/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getStoredToken()}`
         }
       });
       
@@ -187,7 +188,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     try {
       const response = await fetch(`${API_URL}/notifications`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${getStoredToken()}`
         }
       });
       

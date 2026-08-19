@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessagesContext';
 import { websocketService } from '../services/websocketService';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 export interface Conversation {
   id: string;
@@ -182,7 +183,7 @@ export const MessagesPage: React.FC = () => {
         const uploadResponse = await fetch(`${API_URL}/upload`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${getStoredToken()}`
           },
           body: formData
         });

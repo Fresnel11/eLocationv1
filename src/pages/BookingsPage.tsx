@@ -7,6 +7,7 @@ import { BookingDetailsModal } from '../components/ui/BookingDetailsModal';
 import { bookingsService, Booking } from '../services/bookingsService';
 import { useToast } from '../context/ToastContext';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 const statusConfig = {
   pending: { 
@@ -57,12 +58,15 @@ export const BookingsPage: React.FC = () => {
 
   const fetchBookings = async () => {
     try {
-      const token = localStorage.getItem('token');
+      // localStorage seul ratait les sessions ouvertes sans "Se souvenir de moi"
+      // (token en sessionStorage) : un utilisateur bien connecté se faisait rediriger
+      // vers /login à chaque clic sur "Réservations".
+      const token = getStoredToken();
       if (!token) {
         window.location.href = '/login';
         return;
       }
-      
+
       const [tenantResponse, ownerResponse] = await Promise.all([
         bookingsService.getMyBookings(),
         bookingsService.getReceivedBookings()

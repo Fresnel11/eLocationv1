@@ -8,6 +8,7 @@ import { CreateRequestModal } from '../components/ui/CreateRequestModal';
 import { RespondToRequestModal } from '../components/ui/RespondToRequestModal';
 import { ClickableAvatar } from '../components/ui/ClickableAvatar';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 interface Request {
   id: string;
@@ -50,7 +51,7 @@ export const RequestsPage: React.FC = () => {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`

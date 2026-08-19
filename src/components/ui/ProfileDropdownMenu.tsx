@@ -4,6 +4,7 @@ import { Settings, Shield, BarChart3, Download, LogOut, UserX, Flag, Copy, EyeOf
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { API_URL } from '../../config/env';
+import { getStoredToken } from '../../utils/authToken';
 
 
 interface ProfileDropdownMenuProps {
@@ -32,7 +33,7 @@ export const ProfileDropdownMenu: React.FC<ProfileDropdownMenuProps> = ({
 
   const handleExportData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/users/export-data`, {
         method: 'GET',
         headers: {

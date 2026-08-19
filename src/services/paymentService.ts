@@ -1,4 +1,5 @@
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 const API_BASE_URL = API_URL;
 
 export interface PaymentData {
@@ -18,7 +19,7 @@ export interface PaymentResponse {
 
 class PaymentService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = getStoredToken();
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,

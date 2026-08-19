@@ -1,4 +1,5 @@
 import { WS_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 class WebSocketService {
   private ws: WebSocket | null = null;
@@ -36,7 +37,7 @@ class WebSocketService {
       this.ws = null;
     }
 
-    const token = localStorage.getItem('token');
+    const token = getStoredToken();
     if (!token) {
       console.warn('No token found for WebSocket connection');
       return;

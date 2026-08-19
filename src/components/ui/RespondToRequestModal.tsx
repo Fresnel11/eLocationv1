@@ -3,6 +3,7 @@ import { X, Send, Phone, Mail, MapPin, DollarSign, Image, Plus } from 'lucide-re
 import { Button } from './Button';
 import { useToast } from '../../context/ToastContext';
 import { API_URL } from '../../config/env';
+import { getStoredToken } from '../../utils/authToken';
 
 interface RespondToRequestModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ export const RespondToRequestModal: React.FC<RespondToRequestModalProps> = ({
         images: [] // TODO: Handle image upload
       };
 
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/responses/request/${request.id}`, {
         method: 'POST',
         headers: {

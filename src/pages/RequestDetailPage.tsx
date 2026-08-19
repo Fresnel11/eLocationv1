@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { RespondToRequestModal } from '../components/ui/RespondToRequestModal';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 interface RequestDetail {
   id: string;
@@ -62,7 +63,7 @@ export const RequestDetailPage: React.FC = () => {
 
   const fetchRequestDetail = async (requestId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       
       // Récupérer la demande
       const requestResponse = await fetch(`${API_URL}/requests/${requestId}`, {

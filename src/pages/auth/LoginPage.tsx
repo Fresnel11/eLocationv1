@@ -88,12 +88,19 @@ export const LoginPage: React.FC = () => {
       await login(email, password, rememberMe);
       setLoginSuccess(true);
     } catch (err: any) {
+      // Le message générique masquait des causes bien différentes (compte désactivé,
+      // erreur serveur...) derrière "email ou mot de passe incorrect" — on relaie le
+      // vrai message du backend quand on l'a, la formule générique ne reste qu'un repli.
+      const backendMessage: string | undefined = err?.response?.data?.message;
+      const displayMessage = backendMessage === 'Account disabled. Please contact support.'
+        ? 'Ce compte est désactivé. Contactez le support.'
+        : backendMessage === 'Invalid credentials'
+        ? 'Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.'
+        : backendMessage || 'Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.';
+
       // Bannière persistante + toast : l'erreur reste lisible le temps de corriger.
-      setFormError('Email ou mot de passe incorrect. Vérifiez vos informations et réessayez.');
-      error(
-        'Erreur de connexion',
-        'Email ou mot de passe incorrect. Veuillez vérifier vos informations.'
-      );
+      setFormError(displayMessage);
+      error('Erreur de connexion', displayMessage);
     }
   };
 

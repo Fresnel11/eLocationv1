@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Loader2, CreditCard, ArrowLeft } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 interface Booking {
   id: string;
@@ -34,7 +35,7 @@ const PaymentPage: React.FC = () => {
 
   const fetchBookingDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -62,7 +63,7 @@ const PaymentPage: React.FC = () => {
 
     setPaymentLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/moneroo/create-payment`, {
         method: 'POST',
         headers: {

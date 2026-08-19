@@ -21,6 +21,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { API_URL } from '../config/env';
+import { getStoredToken } from '../utils/authToken';
 
 interface User {
   id: string;
@@ -170,7 +171,7 @@ export const UserProfilePage: React.FC = () => {
   const fetchUserRequests = async () => {
     try {
       setRequestsLoading(true);
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -191,7 +192,7 @@ export const UserProfilePage: React.FC = () => {
 
   const handleDeleteRequest = async (requestId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const response = await fetch(`${API_URL}/requests/${requestId}`, {
         method: 'DELETE',
         headers: {
