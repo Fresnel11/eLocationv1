@@ -4,6 +4,7 @@ import { Eye, Check, X, Trash2, AlertTriangle, Image } from 'lucide-react';
 import { DataTable } from '../../components/admin/DataTable';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 interface Ad {
   id: string;
@@ -27,6 +28,7 @@ interface Ad {
 }
 
 export const AdsManagement: React.FC = () => {
+  const { isSuperAdmin } = useAdminAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -203,14 +205,16 @@ export const AdsManagement: React.FC = () => {
         {row.isActive ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
       </button>
       
-      <button
-        onClick={() => handleDelete(row.id)}
-        disabled={actionLoading === row.id}
-        className="p-1 sm:p-2 rounded-md text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-        title="Supprimer"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
+      {isSuperAdmin && (
+        <button
+          onClick={() => handleDelete(row.id)}
+          disabled={actionLoading === row.id}
+          className="p-1 sm:p-2 rounded-md text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+          title="Supprimer"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 

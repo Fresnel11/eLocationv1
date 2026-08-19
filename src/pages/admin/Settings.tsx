@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 interface SystemSetting {
   id: string;
@@ -19,6 +20,7 @@ export const Settings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const { success, error } = useToast();
+  const { isSuperAdmin } = useAdminAuth();
 
   useEffect(() => {
     fetchSettings();
@@ -118,15 +120,17 @@ export const Settings: React.FC = () => {
           <SettingsIcon className="w-6 h-6 text-blue-600" />
           <h1 className="text-2xl font-bold text-gray-900">Paramètres de la Plateforme</h1>
         </div>
-        <Button
-          onClick={handleInitialize}
-          disabled={saving === 'init'}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <RotateCcw className="w-4 h-4" />
-          {saving === 'init' ? 'Initialisation...' : 'Initialiser par défaut'}
-        </Button>
+        {isSuperAdmin && (
+          <Button
+            onClick={handleInitialize}
+            disabled={saving === 'init'}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            {saving === 'init' ? 'Initialisation...' : 'Initialiser par défaut'}
+          </Button>
+        )}
       </div>
 
       {settings.length === 0 ? (
@@ -165,14 +169,16 @@ export const Settings: React.FC = () => {
                   </label>
                   {renderInput(setting)}
                 </div>
-                <Button
-                  onClick={() => handleSave(setting)}
-                  disabled={saving === setting.key}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving === setting.key ? 'Sauvegarde...' : 'Sauvegarder'}
-                </Button>
+                {isSuperAdmin && (
+                  <Button
+                    onClick={() => handleSave(setting)}
+                    disabled={saving === setting.key}
+                    className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {saving === setting.key ? 'Sauvegarde...' : 'Sauvegarder'}
+                  </Button>
+                )}
               </div>
             </div>
           ))}

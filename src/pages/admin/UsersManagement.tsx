@@ -150,10 +150,12 @@ export const UsersManagement: React.FC = () => {
         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
           row.role?.name === 'admin' ? 'bg-purple-100 text-purple-800' :
           row.role?.name === 'super_admin' ? 'bg-red-100 text-red-800' :
+          row.role?.name === 'category_manager' ? 'bg-amber-100 text-amber-800' :
           'bg-gray-100 text-gray-800'
         }`}>
           {row.role?.name === 'admin' ? 'Admin' :
            row.role?.name === 'super_admin' ? 'Super Admin' :
+           row.role?.name === 'category_manager' ? 'Gestionnaire catégorie' :
            'Utilisateur'}
         </span>
       ),
@@ -186,27 +188,31 @@ export const UsersManagement: React.FC = () => {
         <Eye className="h-4 w-4" />
       </button>
       
-      <button
-        onClick={() => handleStatusToggle(row.id, row.isActive)}
-        disabled={actionLoading === row.id}
-        className={`p-1 sm:p-2 rounded-md transition-colors ${
-          row.isActive 
-            ? 'text-red-600 hover:bg-red-50' 
-            : 'text-green-600 hover:bg-green-50'
-        } disabled:opacity-50`}
-        title={row.isActive ? 'Désactiver' : 'Activer'}
-      >
-        {row.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-      </button>
-      
-      <button
-        onClick={() => handleDelete(row.id)}
-        disabled={actionLoading === row.id}
-        className="p-1 sm:p-2 rounded-md text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-        title="Supprimer"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
+      {isSuperAdmin && (
+        <>
+          <button
+            onClick={() => handleStatusToggle(row.id, row.isActive)}
+            disabled={actionLoading === row.id}
+            className={`p-1 sm:p-2 rounded-md transition-colors ${
+              row.isActive
+                ? 'text-red-600 hover:bg-red-50'
+                : 'text-green-600 hover:bg-green-50'
+            } disabled:opacity-50`}
+            title={row.isActive ? 'Désactiver' : 'Activer'}
+          >
+            {row.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+          </button>
+
+          <button
+            onClick={() => handleDelete(row.id)}
+            disabled={actionLoading === row.id}
+            className="p-1 sm:p-2 rounded-md text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+            title="Supprimer"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </>
+      )}
     </div>
   );
 
@@ -221,6 +227,7 @@ export const UsersManagement: React.FC = () => {
         <option value="user">Utilisateur</option>
         <option value="admin">Admin</option>
         <option value="super_admin">Super Admin</option>
+        <option value="category_manager">Gestionnaire catégorie</option>
       </select>
       
       <select

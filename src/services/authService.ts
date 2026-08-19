@@ -30,6 +30,8 @@ export interface User {
     id: string;
     name: string;
   };
+  /** Catégories déléguées, uniquement peuplé pour le rôle `category_manager`. */
+  managedCategoryIds?: string[];
 }
 
 export interface AuthResponse {

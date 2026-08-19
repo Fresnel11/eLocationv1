@@ -32,6 +32,7 @@ import { AdsManagement } from './pages/admin/AdsManagement';
 import { BookingsManagement } from './pages/admin/BookingsManagement';
 import { NotificationsManagement } from './pages/admin/NotificationsManagement';
 import { RolePermissionsManagement } from './pages/admin/RolePermissionsManagement';
+import { CategoryManagersManagement } from './pages/admin/CategoryManagersManagement';
 import { Analytics } from './pages/admin/Analytics';
 import { CategoriesManagement } from './pages/admin/CategoriesManagement';
 import { ReviewsModeration } from './pages/admin/ReviewsModeration';
@@ -133,32 +134,39 @@ function AppContent() {
           <Route path="/referrals" element={<ProtectedRoute><ReferralPage /></ProtectedRoute>} />
           <Route path="/verification" element={<ProtectedRoute><VerificationPage /></ProtectedRoute>} />
 
+          {/* Périmètre category_manager (voir Plans/2026-08-19-scoping-admin-par-categorie.md) : ces 6 routes
+              restent accessibles sans restriction, le filtrage par catégorie se fait côté backend. */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/users" element={<AdminRoute><UsersManagement /></AdminRoute>} />
           <Route path="/admin/ads" element={<AdminRoute><AdsManagement /></AdminRoute>} />
           <Route path="/admin/bookings" element={<AdminRoute><BookingsManagement /></AdminRoute>} />
           <Route path="/admin/notifications" element={<AdminRoute><NotificationsManagement /></AdminRoute>} />
-          <Route path="/admin/permissions" element={<AdminRoute><RolePermissionsManagement /></AdminRoute>} />
-          <Route path="/admin/analytics" element={<AdminRoute><Analytics /></AdminRoute>} />
           <Route path="/admin/categories" element={<AdminRoute><CategoriesManagement /></AdminRoute>} />
           <Route path="/admin/reviews" element={<AdminRoute><ReviewsModeration /></AdminRoute>} />
-          <Route path="/admin/contact-messages" element={<AdminRoute><ContactMessages /></AdminRoute>} />
-          <Route path="/admin/reports" element={<AdminRoute><ReportsManagement /></AdminRoute>} />
-          <Route path="/admin/emails" element={<AdminRoute><EmailTemplates /></AdminRoute>} />
-          <Route path="/admin/maintenance" element={<AdminRoute><Maintenance /></AdminRoute>} />
-          <Route path="/admin/logs" element={<AdminRoute><ActivityLogs /></AdminRoute>} />
-          <Route path="/admin/financial" element={<AdminRoute><FinancialReports /></AdminRoute>} />
-          <Route path="/admin/media" element={<AdminRoute><MediaManagement /></AdminRoute>} />
-          <Route path="/admin/support" element={<AdminRoute><SupportTickets /></AdminRoute>} />
-          <Route path="/admin/audit" element={<AdminRoute><AuditTrail /></AdminRoute>} />
-          <Route path="/admin/monitoring" element={<AdminRoute><SystemMonitoring /></AdminRoute>} />
-          <Route path="/admin/sessions" element={<AdminRoute><SessionManagement /></AdminRoute>} />
-          <Route path="/admin/data-import-export" element={<AdminRoute><DataImportExport /></AdminRoute>} />
-          <Route path="/admin/data-cleanup" element={<AdminRoute><DataCleanup /></AdminRoute>} />
-          <Route path="/admin/system-tests" element={<AdminRoute><SystemTests /></AdminRoute>} />
-          <Route path="/admin/verifications" element={<AdminRoute><AdminVerificationPage /></AdminRoute>} />
-          <Route path="/admin/demarcheurs" element={<AdminRoute><DemarcheursManagement /></AdminRoute>} />
-          <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+
+          {/* Hors périmètre category_manager : admin/super_admin seulement. */}
+          <Route path="/admin/users" element={<AdminRoute restrictTo="admin"><UsersManagement /></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute restrictTo="admin"><Analytics /></AdminRoute>} />
+          <Route path="/admin/contact-messages" element={<AdminRoute restrictTo="admin"><ContactMessages /></AdminRoute>} />
+          <Route path="/admin/reports" element={<AdminRoute restrictTo="admin"><ReportsManagement /></AdminRoute>} />
+          <Route path="/admin/emails" element={<AdminRoute restrictTo="admin"><EmailTemplates /></AdminRoute>} />
+          <Route path="/admin/maintenance" element={<AdminRoute restrictTo="admin"><Maintenance /></AdminRoute>} />
+          <Route path="/admin/logs" element={<AdminRoute restrictTo="admin"><ActivityLogs /></AdminRoute>} />
+          <Route path="/admin/financial" element={<AdminRoute restrictTo="admin"><FinancialReports /></AdminRoute>} />
+          <Route path="/admin/media" element={<AdminRoute restrictTo="admin"><MediaManagement /></AdminRoute>} />
+          <Route path="/admin/support" element={<AdminRoute restrictTo="admin"><SupportTickets /></AdminRoute>} />
+          <Route path="/admin/audit" element={<AdminRoute restrictTo="admin"><AuditTrail /></AdminRoute>} />
+          <Route path="/admin/monitoring" element={<AdminRoute restrictTo="admin"><SystemMonitoring /></AdminRoute>} />
+          <Route path="/admin/sessions" element={<AdminRoute restrictTo="admin"><SessionManagement /></AdminRoute>} />
+          <Route path="/admin/data-import-export" element={<AdminRoute restrictTo="admin"><DataImportExport /></AdminRoute>} />
+          <Route path="/admin/data-cleanup" element={<AdminRoute restrictTo="admin"><DataCleanup /></AdminRoute>} />
+          <Route path="/admin/system-tests" element={<AdminRoute restrictTo="admin"><SystemTests /></AdminRoute>} />
+          <Route path="/admin/verifications" element={<AdminRoute restrictTo="admin"><AdminVerificationPage /></AdminRoute>} />
+          <Route path="/admin/demarcheurs" element={<AdminRoute restrictTo="admin"><DemarcheursManagement /></AdminRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute restrictTo="admin"><Settings /></AdminRoute>} />
+
+          {/* super_admin seulement */}
+          <Route path="/admin/permissions" element={<AdminRoute restrictTo="super_admin"><RolePermissionsManagement /></AdminRoute>} />
+          <Route path="/admin/category-managers" element={<AdminRoute restrictTo="super_admin"><CategoryManagersManagement /></AdminRoute>} />
           <Route path="/create-ad" element={<ProtectedRoute><CreateAdPage /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<UserProfilePage />} />
 

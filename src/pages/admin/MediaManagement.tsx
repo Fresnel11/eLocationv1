@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 interface MediaFile {
   id: string;
@@ -31,6 +32,7 @@ interface MediaStats {
 }
 
 export const MediaManagement: React.FC = () => {
+  const { isSuperAdmin } = useAdminAuth();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [stats, setStats] = useState<MediaStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -307,16 +309,18 @@ export const MediaManagement: React.FC = () => {
                         <Eye className="w-4 h-4" />
                         Voir
                       </Button>
-                      <Button
-                        onClick={() => handleDelete(file.filename)}
-                        disabled={deleteLoading === file.filename}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-300 hover:bg-red-50 flex items-center gap-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {deleteLoading === file.filename ? 'Suppression...' : 'Supprimer'}
-                      </Button>
+                      {isSuperAdmin && (
+                        <Button
+                          onClick={() => handleDelete(file.filename)}
+                          disabled={deleteLoading === file.filename}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-300 hover:bg-red-50 flex items-center gap-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          {deleteLoading === file.filename ? 'Suppression...' : 'Supprimer'}
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>

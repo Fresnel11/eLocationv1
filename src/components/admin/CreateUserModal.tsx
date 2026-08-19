@@ -145,6 +145,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               >
                 <option value="user">Utilisateur</option>
                 <option value="admin">Admin</option>
+                <option value="category_manager">Gestionnaire de catégorie (accès délégué)</option>
               </select>
             </div>
 

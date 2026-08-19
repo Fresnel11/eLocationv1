@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Folder, FolderOpen } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 interface Category {
   id: string;
@@ -28,6 +29,7 @@ export const CategoriesManagement: React.FC = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [modalType, setModalType] = useState<'category' | 'subcategory'>('category');
   const { success, error } = useToast();
+  const { isCategoryManager, managedCategoryIds } = useAdminAuth();
 
   useEffect(() => {
     fetchCategories();
@@ -36,8 +38,11 @@ export const CategoriesManagement: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/categories');
+      const visibleCategories = isCategoryManager
+        ? response.data.filter((category: Category) => managedCategoryIds.includes(category.id))
+        : response.data;
       const categoriesWithSubs = await Promise.all(
-        response.data.map(async (category: Category) => {
+        visibleCategories.map(async (category: Category) => {
           const subResponse = await api.get(`/subcategories?categoryId=${category.id}`);
           return { ...category, subCategories: subResponse.data };
         })
@@ -113,15 +118,21 @@ export const CategoriesManagement: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Gestion des Catégories</h1>
-            <p className="text-gray-600">Gérez les catégories et sous-catégories de la plateforme</p>
+            <p className="text-gray-600">
+              {isCategoryManager
+                ? 'Gérez les sous-catégories de vos catégories déléguées'
+                : 'Gérez les catégories et sous-catégories de la plateforme'}
+            </p>
           </div>
-          <button
-            onClick={handleCreateCategory}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvelle catégorie
-          </button>
+          {!isCategoryManager && (
+            <button
+              onClick={handleCreateCategory}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nouvelle catégorie
+            </button>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -146,20 +157,24 @@ export const CategoriesManagement: React.FC = () => {
                     >
                       <Plus className="h-4 w-4" />
                     </button>
-                    <button
-                      onClick={() => handleEditCategory(category)}
-                      className="text-blue-600 hover:text-blue-800"
-                      title="Modifier"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCategory(category.id)}
-                      className="text-red-600 hover:text-red-800"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {!isCategoryManager && (
+                      <>
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category.id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 

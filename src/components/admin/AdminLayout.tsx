@@ -47,7 +47,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const { unreadCount } = useNotifications();
 
-  const menuItems = [
+  const isCategoryManager = user?.role?.name === 'category_manager';
+
+  // Un category_manager n'a d'accès (front ET back) qu'à ce périmètre :
+  // annonces/réservations/catégories/avis de ses catégories déléguées.
+  const menuItems = isCategoryManager ? [
+    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: '/admin/ads', icon: Home, label: 'Annonces' },
+    { path: '/admin/bookings', icon: Calendar, label: 'Réservations' },
+    { path: '/admin/categories', icon: Folder, label: 'Catégories' },
+    { path: '/admin/reviews', icon: MessageSquare, label: 'Modération Avis' },
+    { path: '/admin/notifications', icon: Bell, label: 'Notifications', badge: unreadCount },
+  ] : [
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
     { path: '/admin/verifications', icon: UserCheck, label: 'Vérifications' },
@@ -56,6 +67,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/bookings', icon: Calendar, label: 'Réservations' },
     { path: '/admin/notifications', icon: Bell, label: 'Notifications', badge: unreadCount },
     ...(user?.role?.name === 'super_admin' ? [{ path: '/admin/permissions', icon: Shield, label: 'Permissions' }] : []),
+    ...(user?.role?.name === 'super_admin' ? [{ path: '/admin/category-managers', icon: Shield, label: 'Délégations' }] : []),
     { path: '/admin/categories', icon: Folder, label: 'Catégories' },
     { path: '/admin/reviews', icon: MessageSquare, label: 'Modération Avis' },
     { path: '/admin/contact-messages', icon: Mail, label: 'Messages Contact' },
