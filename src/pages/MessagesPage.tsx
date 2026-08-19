@@ -176,11 +176,14 @@ export const MessagesPage: React.FC = () => {
       setSending(true);
       const otherUser = getOtherUser(selectedConversation);
       
-      let imageUrl = null;
+      // L'upload générique se fait via /upload/files (multi-fichiers), pas /upload
+      // (qui n'existe pas) — le champ multipart attendu par FilesInterceptor est
+      // 'files' au pluriel, et la réponse renvoie { photos, video }, pas filePath.
+      let imageUrl: string | undefined;
       if (selectedImage) {
         const formData = new FormData();
-        formData.append('file', selectedImage);
-        const uploadResponse = await fetch(`${API_URL}/upload`, {
+        formData.append('files', selectedImage);
+        const uploadResponse = await fetch(`${API_URL}/upload/files`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${getStoredToken()}`
@@ -188,13 +191,15 @@ export const MessagesPage: React.FC = () => {
           body: formData
         });
         const uploadData = await uploadResponse.json();
-        imageUrl = uploadData.filePath;
+        imageUrl = uploadData.photos?.[0] || uploadData.video;
       }
-      
+
       await messagesService.sendMessage({
         content: newMessage.trim() || (selectedImage ? 'Image' : ''),
         receiverId: otherUser.id,
-        adId: selectedConversation.ad?.id
+        adId: selectedConversation.ad?.id,
+        imageUrl,
+        messageType: imageUrl ? 'image' : 'text',
       });
       
       // Le message sera ajouté via WebSocket

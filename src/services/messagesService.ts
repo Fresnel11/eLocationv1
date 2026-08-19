@@ -27,6 +27,8 @@ export const messagesService = {
     receiverId: string;
     adId?: string;
     encrypt?: boolean;
+    imageUrl?: string;
+    messageType?: 'text' | 'image';
   }): Promise<Message> {
     let messageContent = data.content;
     let isEncrypted = false;
@@ -48,7 +50,9 @@ export const messagesService = {
       content: messageContent,
       receiverId: data.receiverId,
       adId: data.adId,
-      isEncrypted
+      isEncrypted,
+      imageUrl: data.imageUrl,
+      messageType: data.messageType,
     });
 
     return response.data;

@@ -1,4 +1,5 @@
 import { Ad } from '../types/ad';
+import { API_URL } from '../config/env';
 
 interface CachedData {
   ads: Ad[];
@@ -130,10 +131,13 @@ class OfflineService {
     if (!this.isOnline()) return;
     
     try {
-      // Synchroniser les données importantes
-      const response = await fetch('/api/ads?limit=50');
-      const ads = await response.json();
-      
+      // Synchroniser les données importantes. Chemin en dur vers /api/ads (inexistant,
+      // aucun proxy Vite ne le réécrit) : ne renvoyait jamais du JSON, la sync échouait
+      // silencieusement (catch générique). /ads renvoie aussi { ads, pagination }, pas
+      // un tableau brut.
+      const response = await fetch(`${API_URL}/ads?limit=50`);
+      const { ads } = await response.json();
+
       await this.saveAds(ads);
       await this.cacheData('lastSync', Date.now());
     } catch (error) {
