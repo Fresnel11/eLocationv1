@@ -63,7 +63,11 @@ export const MessageModal: React.FC<MessageModalProps> = ({
 
     try {
       setSending(true);
-      await messagesService.sendMessage(otherUserId, adId || '', newMessage.trim());
+      await messagesService.sendMessage({
+        content: newMessage.trim(),
+        receiverId: otherUserId,
+        adId: adId || undefined,
+      });
       setNewMessage('');
       await fetchMessages();
     } catch (error) {

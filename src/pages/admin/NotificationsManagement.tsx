@@ -33,7 +33,7 @@ export const NotificationsManagement: React.FC = () => {
                 <div
                   key={notification.id}
                   className={`p-4 hover:bg-gray-50 ${
-                    !notification.isRead ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                    !notification.read ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                   }`}
                 >
                   <div className="flex justify-between items-start">
@@ -42,7 +42,7 @@ export const NotificationsManagement: React.FC = () => {
                         <h4 className="text-sm font-medium text-gray-900">
                           {notification.title}
                         </h4>
-                        {!notification.isRead && (
+                        {!notification.read && (
                           <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                             Nouveau
                           </span>
@@ -56,7 +56,7 @@ export const NotificationsManagement: React.FC = () => {
                       </p>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
-                      {!notification.isRead && (
+                      {!notification.read && (
                         <button
                           onClick={() => markAsRead(notification.id)}
                           className="text-blue-600 hover:text-blue-800 text-sm"

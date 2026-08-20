@@ -10,7 +10,6 @@ import { AdModal } from '../components/ui/AdModal';
 import { MessageModal } from '../components/ui/MessageModal';
 import { ProfileCard } from '../components/ui/ProfileCard';
 import { EditProfileModal } from '../components/ui/EditProfileModal';
-import { BookingHistory } from '../components/ui/BookingHistory';
 import { UserReputation } from '../components/ui/UserReputation';
 import { ReportModal } from '../components/ui/ReportModal';
 import { ClickableAvatar } from '../components/ui/ClickableAvatar';
