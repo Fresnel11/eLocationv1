@@ -88,9 +88,6 @@ export const LoginPage: React.FC = () => {
       await login(email, password, rememberMe);
       setLoginSuccess(true);
     } catch (err: any) {
-      // Le message générique masquait des causes bien différentes (compte désactivé,
-      // erreur serveur...) derrière "email ou mot de passe incorrect" — on relaie le
-      // vrai message du backend quand on l'a, la formule générique ne reste qu'un repli.
       const backendMessage: string | undefined = err?.response?.data?.message;
       const displayMessage = backendMessage === 'Account disabled. Please contact support.'
         ? 'Ce compte est désactivé. Contactez le support.'
