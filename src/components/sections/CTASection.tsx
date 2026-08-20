@@ -5,41 +5,48 @@ import { Link } from 'react-router-dom';
 
 export const CTASection: React.FC = () => {
   return (
-    <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-800 relative overflow-hidden">
-  <div
-    className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2260%22%20height=%2260%22%20viewBox=%220%200%2060%2060%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg%20fill=%22none%22%20fill-rule=%22evenodd%22%3E%3Cg%20fill=%22%23ffffff%22%20fill-opacity=%220.05%22%3E%3Ccircle%20cx=%2230%22%20cy=%2230%22%20r=%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"
-  ></div>
+    <section className="py-24 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 relative overflow-hidden text-white">
+      {/* Dynamic Background Accents */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl pointer-events-none"></div>
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-            Prêt à commencer votre expérience de location ?
+          <div className="inline-block mb-4">
+            <span className="inline-flex items-center gap-1.5 bg-white/10 text-white ring-1 ring-white/20 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider backdrop-blur-md">
+              Rejoignez l'aventure
+            </span>
+          </div>
+
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">
+            Prêt à réinventer votre façon de <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-200">louer au Bénin ?</span>
           </h2>
-          <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-            Rejoignez des milliers d'utilisateurs satisfaits et découvrez une nouvelle façon de louer au Bénin
+          
+          <p className="text-lg sm:text-xl text-blue-100 mb-10 leading-relaxed text-balance">
+            Que vous cherchiez un logement, un véhicule ou des équipements, des milliers d'offres de confiance vous attendent.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-50 hover:text-blue-700 px-8 py-3 font-semibold"
+              className="w-full sm:w-auto bg-white text-blue-700 hover:bg-blue-50 font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
               asChild
             >
-              <Link to="/register" className="flex items-center justify-center text-blue-600">
-                <PlusCircle className="h-5 w-5 mr-2 text-blue-600" />
-                Commencer maintenant
+              <Link to="/register" className="flex items-center justify-center text-blue-700">
+                <PlusCircle className="h-5 w-5 mr-2.5 text-blue-700" />
+                Commencer gratuitement
               </Link>
             </Button>
             
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 font-semibold"
+              className="w-full sm:w-auto border-2 border-white/40 bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-blue-700 font-extrabold px-8 py-4 rounded-2xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
               asChild
             >
-              <Link to="/login" className="flex items-center justify-center">
-                Voir toutes les annonces
-                <ArrowRight className="h-5 w-5 ml-2" />
+              <Link to="/ads" className="flex items-center justify-center">
+                Explorer les annonces
+                <ArrowRight className="h-5 w-5 ml-2.5" />
               </Link>
             </Button>
           </div>

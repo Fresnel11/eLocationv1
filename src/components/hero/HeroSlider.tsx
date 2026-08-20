@@ -74,72 +74,97 @@ export const HeroSlider: React.FC = () => {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div className="relative h-screen overflow-hidden">
+    <div className="relative min-h-[85vh] sm:min-h-screen overflow-hidden bg-slate-950">
       {/* Loader */}
       {!allImagesLoaded && (
-        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center z-20">
+        <div className="absolute inset-0 bg-slate-950 flex items-center justify-center z-20">
           <div className="text-center text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-lg">Chargement...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-lg font-medium text-slate-300">Chargement de votre expérience...</p>
           </div>
         </div>
       )}
 
-      {/* Background Images */}
+      {/* Background Images avec dégradés fluides */}
       <div className="absolute inset-0">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide && allImagesLoaded ? 'opacity-100' : 'opacity-0'
+            className={`absolute inset-0 transition-all duration-1000 transform ${
+              index === currentSlide && allImagesLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
             }`}
           >
             <img
               src={slide.image}
               alt={slide.category}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-black/40"></div>
+            {/* Multi-layered Vignette & Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/40"></div>
+            <div className="absolute inset-0 bg-radial-gradient from-transparent via-slate-950/30 to-slate-950/80"></div>
           </div>
         ))}
       </div>
 
-      {/* Content */}
-      <div className={`relative z-10 h-full flex items-center justify-center transition-opacity duration-500 ${
-        allImagesLoaded ? 'opacity-100' : 'opacity-0'
+      {/* Hero Content */}
+      <div className={`relative z-10 h-full min-h-[85vh] sm:min-h-screen flex items-center justify-center pt-16 pb-20 transition-all duration-700 ${
+        allImagesLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <div className="space-y-6">
-            <div className="inline-block">
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+          <div className="space-y-8">
+            
+            {/* Top Pill Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-glass animate-pulse-glow">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+                Plateforme N°1 au Bénin
+              </span>
+              
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase bg-blue-600/85 backdrop-blur-md text-white shadow-md shadow-blue-500/30 border border-blue-400/30">
                 {currentSlideData.category}
               </span>
             </div>
             
-            {/* <div className="mb-6">
-              <img src={logoImage} alt="eLocation Bénin" className="h-16 w-auto mx-auto mb-4" />
-            </div> */}
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-              {currentSlideData.title}
+            {/* Heading */}
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white">
+              {currentSlideData.title.includes('maison') ? (
+                <>Trouvez votre <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-sky-400">maison idéale</span></>
+              ) : currentSlideData.title.includes('voiture') ? (
+                <>Louez une <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-amber-200">voiture facilement</span></>
+              ) : currentSlideData.title.includes('électroménagers') ? (
+                <>Équipements <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-400 to-cyan-300">électroménagers</span></>
+              ) : (
+                <>Organisez vos <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-400 to-rose-300">événements</span></>
+              )}
             </h1>
             
-            <p className="text-xl sm:text-2xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
+            {/* Subtitle */}
+            <p className="text-lg sm:text-2xl text-slate-200 max-w-3xl mx-auto font-normal leading-relaxed text-balance">
               {currentSlideData.subtitle}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3" asChild>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-8 py-4 rounded-2xl shadow-glow-md hover:shadow-glow-lg transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]" 
+                asChild
+              >
                 <Link to="/ads" className="flex items-center justify-center">
-                  <Search className="h-5 w-5 mr-2" />
-                  Chercher une annonce
+                  <Search className="h-5 w-5 mr-2.5 transition-transform duration-300 group-hover:scale-110" />
+                  Trouver une annonce
                 </Link>
               </Button>
               
-              <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3" asChild>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="w-full sm:w-auto bg-white/10 backdrop-blur-md border border-white/25 text-white hover:bg-white hover:text-slate-900 font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] shadow-glass" 
+                asChild
+              >
                 <Link to="/login" className="flex items-center justify-center">
-                  <PlusCircle className="h-5 w-5 mr-2" />
-                  Publier une annonce
+                  <PlusCircle className="h-5 w-5 mr-2.5" />
+                  Publier gratuitement
                 </Link>
               </Button>
             </div>
@@ -148,17 +173,18 @@ export const HeroSlider: React.FC = () => {
       </div>
 
       {/* Slide indicators */}
-      <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 transition-opacity duration-500 ${
+      <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-3 px-4 py-2 rounded-full bg-slate-900/40 backdrop-blur-md border border-white/10 transition-opacity duration-500 ${
         allImagesLoaded ? 'opacity-100' : 'opacity-0'
       }`}>
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            aria-label={`Aller au slide ${index + 1}`}
+            className={`transition-all duration-300 ${
               index === currentSlide 
-                ? 'bg-white scale-110' 
-                : 'bg-white/50 hover:bg-white/75'
+                ? 'w-8 h-2.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full shadow-glow-sm' 
+                : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/70 rounded-full'
             }`}
           />
         ))}

@@ -74,20 +74,24 @@ const categories = [
 
 export const CategoriesSection: React.FC = () => {
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-gradient-to-b from-slate-50 via-blue-50/20 to-slate-50 relative overflow-hidden">
+      {/* Ambient Decorative Background Glows */}
+      <div className="absolute top-1/4 left-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-0 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-block mb-4">
-            <span className="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold">
-              Nos Services
+            <span className="inline-flex items-center gap-1.5 bg-blue-100/80 text-blue-700 ring-1 ring-blue-500/20 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider shadow-xs">
+              Nos Catégories Prédilectes
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Explorez nos catégories
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight mb-6">
+            Explorez l'univers <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">eLocation</span>
           </h2>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Découvrez une large gamme de produits et services de location adaptés à tous vos besoins
+          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed text-balance">
+            Découvrez une sélection inégalée de logements, véhicules, équipements et matériels disponibles partout au Bénin.
           </p>
         </div>
 
@@ -97,43 +101,46 @@ export const CategoriesSection: React.FC = () => {
             const IconComponent = category.icon;
             return (
               <Link key={category.id} to={`/ads?category=${category.id}`} className="group">
-                <Card className="h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border-0 shadow-lg overflow-hidden">
-                  <CardContent className="p-0">
-                    {/* Icon Section */}
-                    <div className="p-8 text-center relative overflow-hidden">
+                <Card className="h-full rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-md shadow-md hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden cursor-pointer">
+                  <CardContent className="p-0 flex flex-col h-full">
+                    {/* Image & Icon Header Section */}
+                    <div className="p-8 text-center relative overflow-hidden min-h-[160px] flex items-center justify-center">
                       {/* Background Image */}
                       <div 
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
                         style={{ backgroundImage: `url(${category.image})` }}
                       ></div>
                       {/* Color Overlay */}
-                      <div className={`absolute inset-0 ${category.overlay}`}></div>
-                      {/* Animated Overlay */}
-                      <div className="absolute inset-0 bg-white/10 transform rotate-12 scale-150 translate-x-1/2 -translate-y-1/2 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500"></div>
+                      <div className={`absolute inset-0 ${category.overlay} mix-blend-multiply transition-opacity duration-300 opacity-90 group-hover:opacity-95`}></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
                       
-                      <div className="relative z-10">
-                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl ${category.iconBg} shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                          <IconComponent className={`h-8 w-8 ${category.iconColor}`} />
+                      {/* Content Overlay */}
+                      <div className="relative z-10 w-full flex items-center justify-between">
+                        <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl ${category.iconBg} shadow-lg shadow-black/20 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                          <IconComponent className={`h-7 w-7 ${category.iconColor}`} />
                         </div>
-                        <div className="text-right">
-                          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-sm text-gray-700">
-                            {category.count} annonces
-                          </span>
-                        </div>
+                        
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-md text-slate-800 shadow-sm border border-white/50">
+                          {category.count} annonces
+                        </span>
                       </div>
                     </div>
                     
                     {/* Content Section */}
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-bold text-xl text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
-                          {category.name}
-                        </h3>
-                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300" />
+                    <div className="p-6 flex-1 flex flex-col justify-between bg-white">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-bold text-xl text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+                            {category.name}
+                          </h3>
+                          <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
+                            <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300" />
+                          </div>
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed">
+                          {category.description}
+                        </p>
                       </div>
-                      <p className="text-gray-600 leading-relaxed">
-                        {category.description}
-                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -145,11 +152,11 @@ export const CategoriesSection: React.FC = () => {
         {/* CTA */}
         <div className="text-center mt-16">
           <Link 
-            to="/login" 
-            className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            to="/ads" 
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 transition-all duration-300 hover:-translate-y-0.5"
           >
-            Voir toutes les annonces
-            <ArrowRight className="ml-2 h-5 w-5" />
+            Explorer toutes les annonces
+            <ArrowRight className="ml-2.5 h-5 w-5" />
           </Link>
         </div>
       </div>

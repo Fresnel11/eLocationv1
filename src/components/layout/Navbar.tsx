@@ -121,10 +121,10 @@ export const Navbar: React.FC = () => {
   };
 
   const desktopLinkClass = (path: string) =>
-    `relative px-3.5 py-2 text-sm font-semibold rounded-xl transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+    `relative px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
       isActive(path)
-        ? 'text-blue-700 bg-blue-50'
-        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+        ? 'text-blue-600 bg-blue-50/80 shadow-xs ring-1 ring-blue-200/60 font-bold'
+        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
     }`;
 
   const drawerLinkClass = (path: string) =>
@@ -137,10 +137,10 @@ export const Navbar: React.FC = () => {
   const avatar = (size: 'sm' | 'lg') => {
     const box = size === 'sm' ? 'h-9 w-9 text-xs' : 'h-11 w-11 text-sm';
     return user?.profilePicture ? (
-      <img src={user.profilePicture} alt="" className={`${box} rounded-full object-cover ring-2 ring-white`} />
+      <img src={user.profilePicture} alt="" className={`${box} rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm`} />
     ) : (
       <span
-        className={`${box} ${getAvatarColor(avatarSeed)} flex items-center justify-center rounded-full font-bold text-white ring-2 ring-white`}
+        className={`${box} ${getAvatarColor(avatarSeed)} flex items-center justify-center rounded-full font-bold text-white ring-2 ring-white shadow-sm`}
       >
         {getInitials(user?.firstName, user?.lastName)}
       </span>
@@ -157,8 +157,8 @@ export const Navbar: React.FC = () => {
       </a>
 
       <header
-        className={`sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl transition-all duration-300 ${
-          isScrolled ? 'border-slate-200 shadow-sm' : 'border-transparent'
+        className={`sticky top-0 z-50 w-full border-b bg-white/85 backdrop-blur-xl transition-all duration-300 ${
+          isScrolled ? 'border-slate-200/80 shadow-md shadow-slate-900/5' : 'border-slate-100'
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -167,14 +167,14 @@ export const Navbar: React.FC = () => {
             <Link
               to="/"
               aria-label="eLocation Bénin, accueil"
-              className="group shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="group shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-transform duration-200 hover:scale-[1.02]"
             >
               <Logo className="hidden sm:inline-flex" />
               <Logo markOnly className="sm:hidden" />
             </Link>
 
             {/* Navigation principale — la recherche vit dans le hero, pas ici. */}
-            <nav aria-label="Navigation principale" className="ml-2 hidden items-center gap-1 lg:flex">
+            <nav aria-label="Navigation principale" className="ml-2 hidden items-center gap-1.5 lg:flex">
               <Link to="/ads" className={desktopLinkClass('/ads')} aria-current={isActive('/ads') ? 'page' : undefined}>
                 Annonces
               </Link>
@@ -190,10 +190,10 @@ export const Navbar: React.FC = () => {
                 <>
                   <Link
                     to="/create-ad"
-                    className="hidden items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:inline-flex"
+                    className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/25 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/35 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:inline-flex"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden lg:inline">Publier</span>
+                    <span className="hidden lg:inline">Publier une annonce</span>
                   </Link>
 
                   <NotificationBell />
@@ -205,20 +205,20 @@ export const Navbar: React.FC = () => {
                       aria-expanded={isUserMenuOpen}
                       aria-haspopup="menu"
                       aria-label="Menu du compte"
-                      className="flex items-center gap-2 rounded-2xl p-1 pr-2 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      className="flex items-center gap-2 rounded-2xl p-1 pr-2.5 transition-all hover:bg-slate-100/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                       {avatar('sm')}
                       <ChevronDown
-                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180 text-blue-600' : ''}`}
                       />
                     </button>
 
                     {isUserMenuOpen && (
                       <div
                         role="menu"
-                        className="absolute right-0 z-[60] mt-2 w-72 animate-slide-down overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5"
+                        className="absolute right-0 z-[60] mt-2 w-72 animate-slide-down overflow-hidden rounded-2xl border border-slate-100 bg-white/95 backdrop-blur-xl shadow-2xl shadow-slate-900/10"
                       >
-                        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-4">
+                        <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 px-4 py-4">
                           {avatar('lg')}
                           <div className="min-w-0">
                             <p className="truncate text-sm font-bold text-slate-900">{fullName || 'Mon compte'}</p>
@@ -250,16 +250,16 @@ export const Navbar: React.FC = () => {
                   </div>
                 </>
               ) : (
-                <div className="hidden items-center gap-2 md:flex">
+                <div className="hidden items-center gap-2.5 md:flex">
                   <Link
                     to="/login"
-                    className="rounded-2xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-100 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     Connexion
                   </Link>
                   <Link
                     to="/register"
-                    className="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:shadow-blue-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/25 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/35 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     S'inscrire
                   </Link>

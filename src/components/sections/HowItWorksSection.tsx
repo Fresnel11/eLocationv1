@@ -43,23 +43,23 @@ const steps = [
 
 export const HowItWorksSection: React.FC = () => {
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-blue-50/30"></div>
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-radial-gradient from-blue-50/40 via-transparent to-transparent pointer-events-none"></div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-block mb-4">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-4 py-2 rounded-full text-sm font-semibold border border-blue-200">
-              Processus Simple
+            <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500/20 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider shadow-xs">
+              Simplicité & Sécurité
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Comment ça marche ?
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight mb-6">
+            Comment ça <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500">marche ?</span>
           </h2>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Un processus simple, rapide et sécurisé en 4 étapes pour toutes vos locations
+          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed text-balance">
+            Louez tout ce dont vous avez besoin au Bénin en 4 étapes simples et totalement sécurisées.
           </p>
         </div>
 
@@ -69,33 +69,33 @@ export const HowItWorksSection: React.FC = () => {
             const IconComponent = step.icon;
             return (
               <div key={step.step} className="relative group">
-                <Card className="h-full hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-0 shadow-lg overflow-hidden">
-                  <CardContent className="p-0">
+                <Card className="h-full rounded-3xl border border-slate-200/80 bg-white shadow-md hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden">
+                  <CardContent className="p-0 flex flex-col h-full">
                     {/* Header Section */}
-                    <div className={`${step.bgColor} p-6 text-center relative`}>
+                    <div className={`${step.bgColor} p-8 text-center relative border-b border-slate-100`}>
                       {/* Step Number */}
                       <div className="absolute top-4 right-4">
-                        <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center shadow-lg`}>
-                          <span className="text-xs font-bold text-white">{step.step}</span>
+                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-md shadow-slate-900/10`}>
+                          <span className="text-xs font-black text-white">{step.step}</span>
                         </div>
                       </div>
                       
                       {/* Icon */}
                       <div className="mb-4">
-                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-lg shadow-black/5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
                           <IconComponent className={`h-8 w-8 ${step.textColor}`} />
                         </div>
                       </div>
                       
                       {/* Title */}
-                      <h3 className="font-bold text-xl text-gray-900 mb-2">
+                      <h3 className="font-extrabold text-xl text-slate-900 mb-1">
                         {step.title}
                       </h3>
                     </div>
                     
                     {/* Content Section */}
-                    <div className="p-6">
-                      <p className="text-gray-600 leading-relaxed text-center">
+                    <div className="p-6 flex-1 flex items-center bg-white">
+                      <p className="text-slate-600 text-sm leading-relaxed text-center">
                         {step.description}
                       </p>
                     </div>
@@ -104,9 +104,9 @@ export const HowItWorksSection: React.FC = () => {
                 
                 {/* Arrow Connector (Desktop only) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                    <div className="bg-white rounded-full p-2 shadow-lg border border-gray-200">
-                      <ArrowRight className="h-4 w-4 text-gray-400" />
+                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-20">
+                    <div className="bg-white rounded-full p-2.5 shadow-md border border-slate-200/80 text-blue-600">
+                      <ArrowRight className="h-4 w-4" />
                     </div>
                   </div>
                 )}
@@ -115,11 +115,11 @@ export const HowItWorksSection: React.FC = () => {
           })}
         </div>
 
-        {/* Bottom CTA */}
+        {/* Bottom Guarantee */}
         <div className="text-center mt-16">
-          <div className="inline-flex items-center space-x-2 text-sm text-gray-500">
-            <Shield className="h-4 w-4" />
-            <span>Processus 100% sécurisé et garanti</span>
+          <div className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold shadow-xs">
+            <Shield className="h-4 w-4 text-emerald-600" />
+            <span>Toutes vos transactions sont vérifiées et 100% sécurisées</span>
           </div>
         </div>
       </div>

@@ -12,10 +12,10 @@ interface AdCardProps {
 const AdCard: React.FC<AdCardProps> = ({ ad, onClick }) => {
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white rounded-3xl border border-slate-200/80 shadow-md hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300 cursor-pointer overflow-hidden group"
       onClick={onClick}
     >
-      <div className="relative overflow-visible">
+      <div className="relative overflow-hidden aspect-[4/3] bg-slate-100">
         {ad.photos && ad.photos.length > 0 && (
           <img 
             src={ad.photos[0].startsWith('http') 
@@ -23,7 +23,7 @@ const AdCard: React.FC<AdCardProps> = ({ ad, onClick }) => {
               : `${API_URL}${ad.photos[0]}`
             }
             alt={ad.title}
-            className="w-full h-48 object-cover rounded-t-lg"
+            className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-95 transition-all duration-500"
             onError={(e) => {
               e.currentTarget.src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop';
             }}
@@ -34,26 +34,28 @@ const AdCard: React.FC<AdCardProps> = ({ ad, onClick }) => {
         </div>
       </div>
       
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{ad.title}</h3>
+      <div className="p-5">
+        <h3 className="font-bold text-slate-900 text-base mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
+          {ad.title}
+        </h3>
         
-        <div className="flex items-center gap-1 text-gray-600 mb-2">
-          <MapPin className="h-4 w-4" />
-          <span className="text-sm">{ad.location}</span>
+        <div className="flex items-center gap-1.5 text-slate-500 mb-3 text-xs font-medium">
+          <MapPin className="h-4 w-4 text-blue-500" />
+          <span className="truncate">{ad.location}</span>
         </div>
         
-        <p className="text-2xl font-bold text-blue-600 mb-2">
-          {ad.price.toLocaleString()} FCFA
+        <p className="text-xl font-extrabold text-blue-600 mb-3 tracking-tight">
+          {ad.price.toLocaleString()} <span className="text-xs font-bold text-blue-600/80">FCFA</span>
         </p>
         
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-xs font-medium text-slate-400 border-t border-slate-100 pt-3">
           <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-3.5 w-3.5 text-slate-400" />
             <span>{new Date(ad.createdAt).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Eye className="h-4 w-4" />
-            <span>{ad.views || 0}</span>
+            <Eye className="h-3.5 w-3.5 text-slate-400" />
+            <span>{ad.views || 0} vues</span>
           </div>
         </div>
       </div>
